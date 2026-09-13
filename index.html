@@ -308,6 +308,8 @@
   .lightbox[hidden] { display: none; }
   @media (max-width: 560px) { .entry-media { margin-inline: -20px; } .car-btn { width: 30px; height: 30px; } .car-slide figcaption { display: none; } }
 
+  .links { grid-template-columns: repeat(3, auto); justify-content: start; }
+  @media (max-width: 380px) { .links { grid-template-columns: repeat(2, auto); } }
   .hero-minor a { color: inherit; text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; transition: color .15s; }
   .hero-minor a:hover { color: var(--accent); }
   /* ---- about on phones ---- */
