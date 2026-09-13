@@ -86,6 +86,8 @@
   .about-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: clamp(28px, 5vw, 60px); align-items: center; }
   .about-text p { font-size: clamp(16px, 1.9vw, 19px); line-height: 1.62; color: var(--ink); text-align: justify; text-wrap: pretty; }
   .about-text p + p { margin-top: 14px; }
+  .about-text a { color: inherit; text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+  .about-text a:hover { color: var(--accent); }
   .about-venn { display: flex; flex-direction: column; align-items: center; gap: 16px; }
   .venn-intro { font-family: var(--mono); font-size: 12px; color: var(--soft); line-height: 1.5; max-width: 32ch; text-align: center; }
   .about-venn svg { width: 100%; max-width: 500px; height: auto; display: block; overflow: visible; }
@@ -578,11 +580,11 @@
   <!-- 1 · about -->
   <section id="about">
     <div class="wrap">
-      <div class="sec-head"><span class="n">01</span><span class="label">About</span></div>
+      <div class="sec-head"><span class="n">01</span><span class="label">About me</span></div>
       <div class="about-grid">
         <div class="about-text">
-          <p>Hi, I'm Marcelo. I'm a final-year student, and somewhere along the way security stopped being something I study and became something I genuinely care about. I'm curious by nature, I keep up closely with what's happening in the world, and I ask a lot of questions. Lately most of those questions are about AI, because I find it fascinating how the same technology can be used to protect systems and to attack them, and I'm convinced that AI safety is going to matter enormously for fields like cybersecurity. Exploring everything that sits at that intersection is what excites me most right now.</p>
-          <p>Across a bank, a global exchange, a Big Four firm, and a research lab, I've done the technical side of the job, from monitoring and building to security assessments where you dig into a system to find what's solid, what's broken, and what could improve. Those same teams also taught me the other half, which is working with people and explaining what I found to a vendor, a teammate, or the C-suite. That's where I discovered what I enjoy most, making technical ideas clear to any audience, and it's what Legible grew out of.</p>
+          <p>Hi, I'm Marcelo, a final-year Computer Science student at Purdue focused on security. Across a Big Four consulting firm, a global exchange, a financial services group and a research lab, I've learned security from many angles, like assessments, SOC operations, cloud and research. Beyond the technical skills, the lesson that came up in every one of them is that communication is essential in security, because a finding only matters once the people who have to act on it understand it, and that idea is what led me to start <a href="./legible/">Legible</a>.</p>
+          <p>I'm also very interested in AI safety and the impact it will have on cybersecurity, and that's why over the past year I've been going deep into these systems, building agents, workflows and automations, and learning how to use them safely and responsibly.</p>
           <button type="button" class="about-more" aria-expanded="false">Read more &darr;</button>
         </div>
         <div class="about-venn">
