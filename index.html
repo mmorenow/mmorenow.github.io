@@ -307,6 +307,16 @@
   .lightbox img { max-width: 100%; max-height: 92vh; border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
   .lightbox[hidden] { display: none; }
   @media (max-width: 560px) { .entry-media { margin-inline: -20px; } .car-btn { width: 30px; height: 30px; } .car-slide figcaption { display: none; } }
+
+  /* ---- about on phones ---- */
+  .about-more { display: none; margin-top: 10px; background: none; border: 0; padding: 0; font-family: var(--mono); font-size: 12.5px; color: var(--accent); cursor: pointer; }
+  @media (max-width: 760px) {
+    .about-grid { grid-template-columns: 1fr; gap: 26px; }
+    .about-venn svg { max-width: 420px; margin: 0 auto; }
+    .about-text p { font-size: 16px; line-height: 1.62; text-align: left; max-width: none; }
+    .js .about-text:not(.open) p + p { display: none; }
+    .js .about-more { display: inline-block; }
+  }
   /* ---- collapsible sections ---- */
   .sec-toggle { display: flex; align-items: baseline; gap: 12px; width: 100%; background: none; border: 0; padding: 0; margin: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
   .sec-toggle .chev { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--soft); white-space: nowrap; transition: color .15s; }
@@ -568,8 +578,9 @@
       <div class="sec-head"><span class="n">01</span><span class="label">About</span></div>
       <div class="about-grid">
         <div class="about-text">
-          <p>Hi, I'm Marcelo. I'm a final-year student from Lima, Perú, and somewhere along the way security stopped being something I study and became something I genuinely care about. I'm curious by nature, I keep up closely with what's happening in the world, and I ask a lot of questions. Lately most of those questions are about AI, because I find it fascinating how the same technology can be used to protect systems and to attack them, and I'm convinced that AI safety is going to matter enormously for fields like cybersecurity. Exploring everything that sits at that intersection is what excites me most right now.</p>
+          <p>Hi, I'm Marcelo. I'm a final-year student, and somewhere along the way security stopped being something I study and became something I genuinely care about. I'm curious by nature, I keep up closely with what's happening in the world, and I ask a lot of questions. Lately most of those questions are about AI, because I find it fascinating how the same technology can be used to protect systems and to attack them, and I'm convinced that AI safety is going to matter enormously for fields like cybersecurity. Exploring everything that sits at that intersection is what excites me most right now.</p>
           <p>Across a bank, a global exchange, a Big Four firm, and a research lab, I've done the technical side of the job, from monitoring and building to security assessments where you dig into a system to find what's solid, what's broken, and what could improve. Those same teams also taught me the other half, which is working with people and explaining what I found to a vendor, a teammate, or the C-suite. That's where I discovered what I enjoy most, making technical ideas clear to any audience, and it's what Legible grew out of.</p>
+          <button type="button" class="about-more" aria-expanded="false">Read more &darr;</button>
         </div>
         <div class="about-venn">
           <svg viewBox="0 0 480 380" role="img" aria-label="Venn diagram: Cybersecurity, AI/Automation, and Communication/Translation, with an arrow pointing to where all three overlap">
@@ -974,10 +985,10 @@
   <!-- 4 · projects -->
   <section id="work">
     <div class="wrap">
-      <div class="sec-head"><span class="n">04</span><span class="label">Projects</span></div>
+      <div class="sec-head"><span class="n">04</span><span class="label">Selected Projects</span></div>
       <div class="proj-grid">
       <article class="entry has-media">
-        <figure class="entry-media"><button type="button" class="zoom" aria-label="Enlarge the Legible preview"><img src="./photos/projects/legible-preview.jpg" alt="The Legible project site, showing its title and introduction" loading="lazy" /></button></figure>
+        <figure class="entry-media"><button type="button" class="zoom" aria-label="Enlarge the Legible preview"><img src="./photos/projects/legible-og.jpg" alt="Legible artwork, a dense block of technical text connected to a short, clear retelling" loading="lazy" /></button></figure>
         <div class="entry-head">
           <div class="entry-title"><span class="idx">[01]</span>Legible</div>
           <span class="entry-date">Jun 2026 – Present</span>
@@ -1068,6 +1079,10 @@
         entries.forEach(function (e) { e.target.classList.toggle('on', e.isIntersecting); });
       }, { threshold: 0.25 });
       vizzes.forEach(function (v) { io.observe(v); });
+    })();
+    (function () {
+      var t = document.querySelector('.about-text'), b = t && t.querySelector('.about-more');
+      if (b) b.addEventListener('click', function () { var o = !t.classList.contains('open'); t.classList.toggle('open', o); b.setAttribute('aria-expanded', String(o)); b.innerHTML = o ? 'Show less &uarr;' : 'Read more &darr;'; });
     })();
     (function () {
       [].slice.call(document.querySelectorAll('[data-car]')).forEach(function (car) {
