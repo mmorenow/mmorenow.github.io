@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marcelo Moreno · Cybersecurity</title>
+<meta name="description" content="Marcelo Moreno. CS @ Purdue (Security). Incident response, detection engineering, and security research." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #1f2421;
+    --soft: #6a716b;
+    --paper: #f3f2ec;
+    --card: #fafaf6;
+    --rule: #d9d8cd;
+    --accent: oklch(0.52 0.11 232);
+    --gold: #8e6f3e;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+    --sans: "IBM Plex Sans", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 clamp(22px, 5vw, 52px); }
+  .mono { font-family: var(--mono); }
+  .muted { color: var(--soft); }
+  .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--soft); }
+  a { color: inherit; }
+
+  /* ---- top bar (sticky) ---- */
+  .top { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--rule); background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(8px); }
+  .top .wrap { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; gap: 16px; }
+  .top .name { font-family: var(--mono); font-weight: 500; font-size: 14px; white-space: nowrap; }
+  .top .name::before { content: "~/ "; color: var(--accent); }
+  .topnav { display: flex; align-items: center; gap: 6px; }
+  .topnav a { font-family: var(--mono); font-size: 12.5px; color: var(--soft); text-decoration: none; padding: 6px 10px; border-radius: 6px; transition: .15s; }
+  .topnav a:hover { color: var(--ink); background: var(--card); }
+  .topnav .cta { color: var(--ink); border: 1px solid var(--ink); }
+  .topnav .cta:hover { background: var(--ink); color: var(--paper); }
+  @media (max-width: 620px) { .topnav .jump { display: none; } }
+
+  /* ---- hero ---- */
+  header.hero { padding: clamp(46px, 7vw, 92px) 0 clamp(34px, 5vw, 58px); border-bottom: 1px solid var(--rule); }
+  .hero-grid { display: grid; grid-template-columns: 1fr auto; gap: clamp(24px, 5vw, 56px); align-items: center; margin-top: clamp(20px, 3vw, 32px); }
+  .hero-main > :first-child { margin-top: 0; }
+  .hero-kicker { font-size: 18px; color: var(--soft); letter-spacing: 0.04em; margin-bottom: 14px; display: flex; align-items: center; }
+  .hero-kicker .b { color: var(--accent); margin-right: 0.6ch; }
+  .hero-kicker .typed { display: inline-block; overflow: hidden; white-space: nowrap; width: 6ch; }
+  .js .hero-kicker .typed { width: 0; animation: typing 1.05s steps(6) .3s both; }
+  @keyframes typing { to { width: 6ch; } }
+  .hero-name { font-size: clamp(40px, 7vw, 72px); line-height: 1.02; letter-spacing: -0.03em; font-weight: 600; }
+  .hero-name .hero-last { white-space: nowrap; }
+  .caret { display: inline-block; width: 0.5ch; height: 0.82em; background: var(--accent); margin-left: 4px; transform: translateY(2px); animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .hero-degree { font-size: clamp(22px, 3.1vw, 32px); font-weight: 600; letter-spacing: -0.012em; line-height: 1.16; }
+  .hero-degree .cs { color: var(--gold); }
+  .hero-degree .sec { color: var(--ink); font-weight: 600; }
+  .hero-school { font-family: var(--mono); font-size: 13.5px; color: var(--soft); margin-top: 12px; display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+  .hero-school .pwordmark { height: 30px; width: auto; }
+  .hero-school .at { color: var(--ink); font-size: 2em; font-weight: 600; line-height: 1; }
+  .hero-minor { font-family: var(--mono); font-size: 12.5px; color: var(--soft); margin-top: 5px; }
+  .hero-meta { margin-top: clamp(22px, 3.5vw, 34px); display: flex; align-items: center; gap: 14px 20px; flex-wrap: wrap; }
+  .avail { font-family: var(--mono); font-size: 12.5px; color: var(--ink); display: inline-flex; align-items: center; gap: 9px; border: 1px solid var(--rule); background: var(--card); padding: 8px 14px; border-radius: 6px; }
+  .avail .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 60%, transparent); animation: pulse 2.4s ease-out infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 55%, transparent); } 70%,100% { box-shadow: 0 0 0 7px transparent; } }
+  .links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .links a { font-family: var(--mono); font-size: 13px; color: var(--ink); text-decoration: none; padding: 8px 14px; border: 1px solid var(--ink); border-radius: 6px; transition: .15s; justify-content: center; }
+  .links a::before { content: "→ "; color: var(--accent); }
+  .links a:hover { background: var(--ink); color: var(--paper); }
+  .links a:hover::before { color: var(--paper); }
+  .links a.iclink::before { content: none; }
+  .iclink { display: inline-flex; align-items: center; gap: 7px; }
+  .iclink img { height: 15px; width: 15px; object-fit: contain; display: block; }
+  .iclink svg { height: 15px; width: 15px; display: block; flex: 0 0 auto; }
+  .iclink.gh:hover img { filter: invert(1); }
+  .hero-photo img { width: clamp(185px, 27vw, 290px); aspect-ratio: 1 / 1; object-fit: cover; object-position: center center; border-radius: 50%; border: 1px solid var(--rule); display: block; filter: saturate(.98) contrast(1.02); box-shadow: 0 10px 34px rgba(31,36,33,.14); }
+  @media (max-width: 640px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-photo { order: -1; }
+    .hero-photo img { width: 170px; border-radius: 50%; }
+  }
+
+  /* ---- about + venn ---- */
+  .about-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: clamp(28px, 5vw, 60px); align-items: center; }
+  .about-text p { font-size: clamp(16px, 1.9vw, 19px); line-height: 1.62; color: var(--ink); text-align: justify; text-wrap: pretty; }
+  .about-text p + p { margin-top: 14px; }
+  .about-venn { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .venn-intro { font-family: var(--mono); font-size: 12px; color: var(--soft); line-height: 1.5; max-width: 32ch; text-align: center; }
+  .about-venn svg { width: 100%; max-width: 500px; height: auto; display: block; overflow: visible; }
+  .venn-fill { fill: var(--accent); fill-opacity: .15; }
+  .venn-circle { fill: none; stroke: var(--ink); stroke-width: 1.3; }
+  .venn-set { font-family: var(--mono); font-size: 11px; font-weight: 500; fill: var(--ink); }
+  .venn-core { font-family: var(--mono); font-size: 9px; font-weight: 600; fill: var(--accent); letter-spacing: .02em; }
+  .venn-note { font-family: var(--mono); font-size: 11px; font-weight: 500; fill: var(--accent); }
+  .venn-arrow { fill: none; }
+  /* venn reveal animation (only when JS present; static fallback otherwise) */
+  .js .about-venn svg .venn-circle { stroke-dasharray: 503; stroke-dashoffset: 503; }
+  .js .about-venn svg .venn-fill { fill-opacity: 0; }
+  .js .about-venn svg .venn-set, .js .about-venn svg .venn-note { opacity: 0; }
+  .js .about-venn svg .venn-arrow { stroke-dasharray: 230; stroke-dashoffset: 230; }
+  .venn-in .venn-circle { animation: vdrawloop 3s ease-in-out infinite; }
+  .venn-in .venn-circle.c2 { animation-delay: .18s; }
+  .venn-in .venn-circle.c3 { animation-delay: .36s; }
+  .venn-in .venn-set { animation: vfade .55s ease forwards .55s; }
+  .venn-in .venn-fill { animation: vfillin .6s ease forwards .8s, vbreathe 3.6s ease-in-out 1.8s infinite; }
+  .venn-in .venn-arrow { animation: vdraw .7s ease forwards 1.05s; }
+  .venn-in .venn-note { animation: vfade .55s ease forwards 1.3s; }
+  @keyframes vdraw { to { stroke-dashoffset: 0; } }
+  @keyframes vdrawloop { 0% { stroke-dashoffset: 503; } 32%, 100% { stroke-dashoffset: 0; } }
+  @keyframes vfade { to { opacity: 1; } }
+  @keyframes vfillin { to { fill-opacity: .16; } }
+  @keyframes vbreathe { 0%, 100% { fill-opacity: .12; } 50% { fill-opacity: .24; } }
+  .tl-jumpline { margin-top: 12px; }
+  .tl-jump { font-family: var(--mono); font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .tl-jump::after { content: " →"; }
+  .tl-jump:hover { text-decoration: underline; }
+  @media (max-width: 760px) { .about-grid { grid-template-columns: 1fr; gap: 30px; } }
+
+  /* ---- generic section ---- */
+  section { padding: clamp(40px, 6vw, 70px) 0; border-top: 1px solid var(--rule); }
+  section:first-of-type { border-top: none; }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: clamp(22px, 3vw, 34px); }
+  .sec-head .n { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+
+  /* ---- experience timeline ---- */
+  .timeline { list-style: none; }
+  .tl-item { display: grid; grid-template-columns: 48px 18px 1fr; column-gap: 10px; padding-bottom: 30px; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-date { font-family: var(--mono); font-size: 12px; color: var(--accent); text-align: right; padding-top: 3px; white-space: nowrap; }
+  .tl-marker { position: relative; display: flex; justify-content: center; }
+  .tl-marker::before { content: ""; position: absolute; top: 8px; bottom: -30px; width: 1px; background: var(--rule); }
+  .tl-item:last-child .tl-marker::before { display: none; }
+  .tl-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-top: 5px; box-shadow: 0 0 0 3px var(--paper); position: relative; z-index: 1; }
+  .tl-body { padding-top: 0; }
+  .tl-d > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 13px; }
+  .tl-d > summary::-webkit-details-marker { display: none; }
+  .tl-logo { width: 52px; height: 52px; flex: 0 0 auto; display: grid; place-items: center; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 6px; }
+  .tl-logo img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+  .tl-sumtext { flex: 1 1 auto; min-width: 0; }
+  .tl-co { font-family: var(--mono); font-weight: 500; font-size: 15.5px; line-height: 1.25; display: block; }
+  .tl-role { font-family: var(--mono); font-size: 12px; color: var(--soft); margin-top: 5px; display: block; }
+  .tl-more { flex: 0 0 auto; font-family: var(--mono); font-size: 12px; color: var(--accent); white-space: nowrap; transition: opacity .15s; }
+  .tl-more::after { content: "Learn more ↓"; }
+  .tl-d[open] .tl-more::after { content: "Show less ↑"; }
+  .tl-d > summary:hover .tl-more { opacity: .65; }
+  .tl-expand { margin-top: 15px; }
+  .tl-d[open] .tl-expand { animation: tlreveal .32s ease; }
+  @keyframes tlreveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  .tl-about-line { font-size: 12.5px; color: var(--soft); line-height: 1.45; margin-bottom: 13px; }
+  @media (max-width: 560px) { .tl-more::after { content: "More ↓"; } .tl-d[open] .tl-more::after { content: "Less ↑"; } }
+  .tl-points { list-style: none; display: grid; gap: 7px; }
+  .tl-points li { position: relative; padding-left: 18px; font-size: 14px; color: #3c423d; line-height: 1.55; text-wrap: pretty; }
+  .tl-points li::before { content: "▹"; position: absolute; left: 0; color: var(--accent); font-size: 12px; top: 1px; }
+  .tl-points b { color: var(--ink); font-weight: 600; }
+  .tl-note { font-size: 14px; color: var(--soft); }
+  .tl-lead { font-size: clamp(15px, 1.5vw, 17px); color: var(--ink); margin-bottom: 0; line-height: 1.55; }
+  .tl-narrative p { font-size: 14px; color: #3c423d; line-height: 1.62; text-wrap: pretty; }
+  .tl-narrative p + p { margin-top: 10px; }
+  .tl-narrative b { color: var(--ink); font-weight: 600; }
+  .tl-narrative a { color: var(--accent); text-decoration: none; }
+  .tl-narrative a:hover { text-decoration: underline; }
+  .tl-photos { display: flex; gap: 10px; margin: 16px 0 2px; flex-wrap: wrap; }
+  .tl-photos figure { margin: 0; }
+  .tl-photos img { height: 300px; width: auto; max-width: 100%; border-radius: 10px; border: 1px solid var(--rule); object-fit: cover; display: block; box-shadow: 0 2px 14px rgba(31,36,33,.09); }
+  .tl-photos figcaption { font-family: var(--mono); font-size: 10.5px; color: var(--soft); margin-top: 6px; letter-spacing: .01em; }
+  @media (max-width: 560px) { .tl-item { grid-template-columns: 40px 16px 1fr; column-gap: 8px; } .tl-date { font-size: 11px; } .tl-photos img { height: 210px; } }
+
+  /* ---- entry cards (research + work) ---- */
+  .entry { border: 1px solid var(--rule); border-radius: 10px; background: var(--card); padding: 18px 20px; margin-bottom: 14px; }
+  .entry:last-child { margin-bottom: 0; }
+  .entry-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px 16px; flex-wrap: wrap; }
+  .entry-title { font-family: var(--mono); font-weight: 500; font-size: 15px; }
+  .entry-title .idx { color: var(--accent); margin-right: 7px; }
+  .entry-date { font-family: var(--mono); font-size: 11.5px; color: var(--soft); white-space: nowrap; }
+  .entry-sub { font-family: var(--mono); font-size: 11.5px; color: var(--soft); margin: 6px 0 10px; display: flex; align-items: center; gap: 7px; }
+  .entry-sub img { height: 15px; width: auto; opacity: .85; }
+  .entry p { font-size: 14px; color: #3c423d; line-height: 1.58; text-wrap: pretty; }
+  .entry p b { color: var(--ink); font-weight: 600; }
+  .badge { display: inline-block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .03em; color: var(--accent); border: 1px solid color-mix(in oklch, var(--accent) 32%, transparent); border-radius: 100px; padding: 3px 10px; margin-top: 10px; white-space: nowrap; }
+  .entry-head .badge { margin-top: 0; }
+  .research-intro { display: flex; align-items: center; gap: 18px; margin-bottom: 20px; padding: 16px 20px; border: 1px solid var(--rule); border-radius: 10px; background: var(--card); flex-wrap: wrap; }
+  .research-intro img { height: 84px; width: auto; flex: 0 0 auto; margin: -8px 0; }
+  .research-intro .ri-text { font-size: 14px; color: #3c423d; line-height: 1.5; flex: 1; min-width: 220px; }
+  .research-intro .ri-text b { font-family: var(--mono); font-weight: 500; color: var(--ink); font-size: 13.5px; }
+  .research-intro a { color: var(--accent); text-decoration: none; }
+  .research-intro a:hover { text-decoration: underline; }
+  .entry-metrics { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
+  .entry-metrics span { font-family: var(--mono); font-size: 11.5px; padding: 5px 10px; border-radius: 6px; background: var(--paper); border: 1px solid var(--rule); color: var(--ink); }
+  .entry-metrics span b { color: var(--accent); font-weight: 600; }
+  .entry-callout { margin-top: 13px; padding: 11px 14px; border-left: 2px solid var(--accent); background: color-mix(in oklch, var(--accent) 7%, transparent); border-radius: 0 8px 8px 0; font-size: 13.5px; color: #3c423d; line-height: 1.55; }
+  .entry-callout .ct { font-family: var(--mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 3px; }
+  .entry-callout b { color: var(--ink); font-weight: 600; }
+  .entry-tech { font-family: var(--mono); font-size: 11px; color: var(--soft); margin-top: 12px; line-height: 1.5; }
+  .entry-tech::before { content: "stack: "; color: var(--accent); }
+
+  /* ---- teaching ---- */
+  .teach-top { margin-bottom: clamp(24px, 3.5vw, 36px); }
+  .teach-lead { font-size: clamp(16px, 1.9vw, 19px); line-height: 1.6; color: var(--ink); text-align: justify; }
+  .teach-facts { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 18px; font-family: var(--mono); font-size: 12.5px; color: var(--soft); }
+  .teach-facts span::before { content: "▹ "; color: var(--accent); }
+  .teach-feature { margin: 0; border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; background: var(--card); box-shadow: 0 6px 22px rgba(31,36,33,.07); }
+  .teach-feature img { width: 100%; display: block; aspect-ratio: 16 / 9; object-fit: cover; }
+  .teach-pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .tp { margin: 0; }
+  .tp img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid var(--rule); border-radius: 12px; background: var(--card); display: block; box-shadow: 0 2px 14px rgba(31,36,33,.07); transition: transform .25s ease, box-shadow .25s ease; }
+  .tp:hover img { transform: translateY(-5px); box-shadow: 0 12px 28px rgba(31,36,33,.13); }
+  .tp figcaption { font-family: var(--mono); font-size: 12px; color: var(--ink); margin-top: 10px; }
+  .tp figcaption::before { content: "// "; color: var(--accent); }
+  @media (max-width: 760px) { .teach-top { grid-template-columns: 1fr; } .teach-pillars { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 460px) { .teach-pillars { grid-template-columns: 1fr; } }
+
+  /* ---- scroll reveal ---- */
+  .js .reveal { opacity: 0; transform: translateY(20px); }
+  .reveal { transition: opacity .6s ease, transform .6s ease; }
+  .reveal.is-in { opacity: 1; transform: none; }
+
+  /* ---- skills ---- */
+  .skills-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(20px, 3.5vw, 36px); }
+  .skills-grid h3 { font-family: var(--mono); font-weight: 500; font-size: 13.5px; margin-bottom: 13px; color: var(--soft); }
+  .skills-grid h3::before { content: "// "; color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip { font-family: var(--mono); font-size: 12px; padding: 6px 10px; border-radius: 6px; background: var(--card); border: 1px solid var(--rule); }
+  @media (max-width: 700px) { .skills-grid { grid-template-columns: 1fr; gap: 24px; } }
+
+  /* ---- organizations ---- */
+  .orgs { font-family: var(--mono); font-size: 13.5px; color: var(--ink); display: flex; flex-wrap: wrap; gap: 8px 14px; }
+  .orgs span::before { content: "● "; color: var(--accent); font-size: 10px; }
+
+  /* ---- footer ---- */
+  footer { border-top: 1px solid var(--rule); padding: clamp(44px,6vw,76px) 0 clamp(40px,6vw,60px); }
+  footer .ft { font-size: clamp(24px, 3.6vw, 38px); font-weight: 600; line-height: 1.15; letter-spacing: -0.02em; max-width: 20ch; margin-bottom: 26px; }
+  footer .ft .hl { color: var(--accent); }
+  footer .fl { display: flex; gap: 8px; flex-wrap: wrap; }
+  footer .fl a { font-family: var(--mono); font-size: 13px; color: var(--ink); text-decoration: none; padding: 9px 15px; border: 1px solid var(--ink); border-radius: 6px; transition: .15s; }
+  footer .fl a:hover { background: var(--ink); color: var(--paper); }
+  footer .colophon { font-family: var(--mono); font-size: 11px; color: var(--soft); margin-top: 30px; }
+
+
+
+  /* ---- wide layout ---- */
+  .wrap { max-width: 1240px; padding: 0 clamp(20px, 4vw, 56px); }
+  .top .wrap { padding: 14px clamp(20px, 4vw, 56px); }
+  .about-grid { grid-template-columns: 1.25fr 1fr; gap: clamp(32px, 6vw, 88px); }
+  .about-text p { text-align: left; max-width: 68ch; }
+  .about-venn svg { max-width: 560px; }
+  .tl-narrative p { max-width: 80ch; }
+  .tl-lead, .tl-about-line { max-width: 80ch; }
+  .tl-photos img { height: 340px; }
+  .research-intro .ri-text { max-width: 110ch; }
+  .rs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: stretch; }
+  .rs-grid .rs-card { margin-bottom: 0; display: flex; flex-direction: column; }
+  .rs-grid .rs-body { flex: 1; }
+  .rs-grid .rs-viz { min-height: 360px; display: flex; flex-direction: column; justify-content: center; }
+  .rs-body p.entry-tech { font-size: 11.5px; line-height: 1.6; }
+  @media (max-width: 980px) { .rs-grid .rs-viz { min-height: 0; } }
+  .teach-lead { text-align: left; max-width: 82ch; }
+  .proj-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+  .proj-grid .entry { margin-bottom: 0; }
+  @media (max-width: 980px) { .rs-grid, .proj-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .tl-photos img { height: 210px; } }
+
+  /* ---- compact research cards ---- */
+  .rs-one { font-size: 14.5px !important; color: var(--body) !important; }
+  .rs-more { margin-top: 14px; background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--mono); font-size: 12.5px; color: var(--accent); }
+  .rs-more::after { content: "See how it works \2193"; }
+  .rs-card.open .rs-more::after { content: "Show less \2191"; }
+  .rs-more:hover { text-decoration: underline; }
+  .rs-more .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .rs-more { display: none; }
+  .js .rs-more { display: inline-block; }
+  .js .rs-card:not(.open) .rs-viz, .js .rs-card:not(.open) .rs-full { display: none; }
+  .js .rs-card.open .rs-one { display: none; }
+  .js .rs-grid { grid-auto-flow: row dense; }
+  .js .rs-grid .rs-card:not(.open) { display: block; }
+  .js .rs-grid .rs-card.open { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); animation: rsopen .35s ease; }
+  .js .rs-grid .rs-card.open .rs-viz { border-bottom: 0; border-right: 1px solid var(--rule); min-height: 0; }
+  .js .rs-grid .rs-card.open .rs-body { align-self: center; padding: 26px 28px; }
+  @keyframes rsopen { from { opacity: .4; } to { opacity: 1; } }
+  @media (max-width: 980px) { .js .rs-grid .rs-card.open { grid-template-columns: 1fr; } .js .rs-grid .rs-card.open .rs-viz { border-right: 0; border-bottom: 1px solid var(--rule); } }
+  @media (prefers-reduced-motion: reduce) { .js .rs-grid .rs-card.open { animation: none; } }
+
+  /* ---- project media, carousel, lightbox ---- */
+  .entry.has-media { padding-top: 0; overflow: hidden; }
+  .entry-media { margin: 0 -20px 16px; border-bottom: 1px solid var(--rule); background: var(--paper); position: relative; }
+  .entry-media img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; object-position: top left; display: block; }
+  .entry-media img.fit { object-fit: contain; object-position: center; }
+  .proj-grid { align-items: start; }
+  .zoom { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+  .zoom:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
+  .car { overflow: hidden; }
+  .car-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; }
+  .car-track::-webkit-scrollbar { display: none; }
+  .car-slide { flex: 0 0 100%; margin: 0; scroll-snap-align: start; position: relative; }
+  .car-slide figcaption { position: absolute; left: 12px; bottom: 12px; font-family: var(--mono); font-size: 11px; color: var(--ink); background: color-mix(in srgb, var(--card) 92%, transparent); border: 1px solid var(--rule); border-radius: 6px; padding: 4px 8px; }
+  .car-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--rule); background: color-mix(in srgb, var(--card) 94%, transparent); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; display: grid; place-items: center; padding-bottom: 3px; transition: background .15s, opacity .15s; box-shadow: 0 2px 10px rgba(31,36,33,.12); }
+  .car-btn:hover { background: var(--ink); color: var(--paper); }
+  .car-btn.prev { left: 10px; } .car-btn.next { right: 10px; }
+  .car-btn[disabled] { opacity: 0; pointer-events: none; }
+  .car-dots { position: absolute; right: 12px; bottom: 14px; display: flex; gap: 6px; }
+  .car-dots button { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--ink); background: transparent; padding: 0; cursor: pointer; opacity: .6; }
+  .car-dots button[aria-selected="true"] { background: var(--ink); opacity: 1; }
+  .entry p.entry-tech { font-size: 11.5px; line-height: 1.6; margin-top: 10px; }
+  .media-note { font-family: var(--mono); font-size: 11px !important; color: var(--soft) !important; margin-top: 6px; }
+  .lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(20,22,21,.82); display: grid; place-items: center; padding: 3vw; cursor: zoom-out; }
+  .lightbox img { max-width: 100%; max-height: 92vh; border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+  .lightbox[hidden] { display: none; }
+  @media (max-width: 560px) { .entry-media { margin-inline: -20px; } .car-btn { width: 30px; height: 30px; } .car-slide figcaption { display: none; } }
+  /* ---- collapsible sections ---- */
+  .sec-toggle { display: flex; align-items: baseline; gap: 12px; width: 100%; background: none; border: 0; padding: 0; margin: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+  .sec-toggle .chev { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--soft); white-space: nowrap; transition: color .15s; }
+  .sec-toggle .chev::after { content: "Hide \2191"; }
+  section.collapsed .sec-toggle .chev::after { content: "Show \2193"; }
+  .sec-toggle:hover .chev { color: var(--accent); }
+  .sec-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; border-radius: 4px; }
+  .sec-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .45s ease; }
+  .sec-inner { min-height: 0; }
+  section.collapsed .sec-body { grid-template-rows: 0fr; }
+  section.collapsed .sec-inner, .sec-body.anim .sec-inner { overflow: hidden; }
+  section { transition: padding .35s ease; }
+  section.collapsed { padding-block: 22px; }
+  section.collapsed .sec-head { margin-bottom: 0; }
+  @media (prefers-reduced-motion: reduce) { .sec-body, section { transition: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .caret, .avail .dot { animation: none; }
+    .js .hero-kicker .typed { width: 6ch; animation: none; }
+    .js .about-venn svg .venn-circle { stroke-dashoffset: 0; }
+    .js .about-venn svg .venn-fill { fill-opacity: .16; }
+    .js .about-venn svg .venn-set, .js .about-venn svg .venn-note { opacity: 1; }
+    .js .about-venn svg .venn-arrow { stroke-dashoffset: 0; }
+    .venn-in .venn-circle, .venn-in .venn-set, .venn-in .venn-fill, .venn-in .venn-arrow, .venn-in .venn-note { animation: none; }
+    .tl-d[open] .tl-expand { animation: none; }
+    .js .reveal { opacity: 1; transform: none; }
+    .reveal { transition: none; }
+  }
+  /* ---- research v2 ---- */
+  .rs-card { border: 1px solid var(--rule); border-radius: 12px; background: var(--card); overflow: hidden; margin-bottom: 18px; }
+  .rs-card:last-child { margin-bottom: 0; }
+  .rs-viz { background: var(--paper); border-bottom: 1px solid var(--rule); padding: clamp(14px, 2.4vw, 22px) clamp(14px, 2.6vw, 26px) 12px; }
+  .rs-viz svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .rs-steps { display: flex; justify-content: space-between; gap: 6px 14px; flex-wrap: wrap; margin-top: 12px; font-family: var(--mono); font-size: 11px; color: var(--soft); }
+  .rs-steps span { transition: color .3s; }
+  .rs-steps b { color: var(--accent); font-weight: 500; margin-right: 5px; }
+  .rs-legend { display: flex; gap: 6px 16px; flex-wrap: wrap; margin-top: 10px; font-family: var(--mono); font-size: 11px; color: var(--soft); }
+  .rs-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+  .rs-legend i.acc { background: var(--accent); }
+  .rs-legend i.gold { background: var(--gold); }
+  .rs-legend i.ink { background: var(--ink); }
+  .rs-body { padding: 18px 20px 20px; }
+  .rs-head { display: flex; justify-content: space-between; align-items: center; gap: 8px 16px; flex-wrap: wrap; }
+  .rs-title { font-family: var(--mono); font-weight: 500; font-size: 15.5px; line-height: 1.3; }
+  .rs-title .idx { color: var(--accent); margin-right: 7px; }
+  .rs-sub { font-family: var(--mono); font-size: 11.5px; color: var(--soft); margin: 6px 0 12px; }
+  .rs-body p { font-size: 14px; color: #3c423d; line-height: 1.62; text-wrap: pretty; }
+  .rs-body p + p { margin-top: 10px; }
+  .rs-body .entry-tech { margin-top: 13px; }
+  .status { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .03em; border-radius: 100px; padding: 3px 10px; white-space: nowrap; border: 1px solid var(--rule); color: var(--soft); }
+  .status.sub { color: var(--accent); border-color: color-mix(in oklch, var(--accent) 35%, transparent); }
+  .status.live { color: var(--ink); }
+  .status.live .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2.4s ease-out infinite; }
+
+  /* shared svg vocabulary */
+  .g-edge { stroke: #cfcec2; stroke-width: 2.4; stroke-linecap: round; fill: none; }
+  .g-node { fill: var(--card); stroke: var(--ink); stroke-width: 1.2; }
+  .g-start { fill: var(--ink); }
+  .g-lbl { font-family: var(--mono); font-size: 10.5px; fill: var(--soft); }
+  .g-lbl.ink { fill: var(--ink); font-weight: 500; }
+  .g-lbl.acc { fill: var(--accent); font-weight: 500; }
+  .g-lbl.gold { fill: var(--gold); font-weight: 500; }
+  .g-box { fill: var(--card); stroke: var(--ink); stroke-width: 1.2; }
+  .g-boxtxt { font-family: var(--mono); font-size: 11px; fill: var(--ink); }
+  .g-wire { stroke: var(--ink); stroke-width: 1.2; fill: none; }
+  .g-chip { fill: var(--card); stroke: var(--rule); }
+  .g-say { font-family: var(--mono); font-size: 12px; fill: var(--ink); }
+  .fb { transform-box: fill-box; transform-origin: center; }
+
+  /* ---------- viz 1 · ToT-Nav planning (10s loop) ---------- */
+  .tot .kw { transition: none; }
+  .tot .ring { fill: none; stroke-width: 1.6; opacity: 0; }
+  .tot .ring.k1 { stroke: var(--gold); }
+  .tot .ring.k2 { stroke: var(--accent); }
+  .tot .arc path { fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-dasharray: 3 5; }
+  .tot .arc { opacity: 0; }
+  .tot .final { fill: none; stroke: var(--accent); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 360; stroke-dashoffset: 360; }
+  .tot .endlbl { opacity: 0; }
+  .on .tot .kw.k1 { animation: kw1 10s infinite; }
+  .on .tot .kw.k2 { animation: kw2 10s infinite; }
+  .on .tot .ring.k1 { animation: ringIn1 10s infinite; }
+  .on .tot .ring.k2 { animation: ringIn2 10s infinite; }
+  .on .tot .ring.k1.p1 { animation-name: ringP1; }
+  .on .tot .ring.p2 { animation-name: ringP2a; }
+  .on .tot .ring.k2.p2 { animation-name: ringP2b; }
+  .on .tot .arc.l1 { animation: arcL1 10s infinite; }
+  .on .tot .arc.l1.p1 { animation-name: arcP1; }
+  .on .tot .arc.l1.p2 { animation-name: arcL1P2; }
+  .on .tot .arc.l2 { animation: arcL2 10s infinite; }
+  .on .tot .arc.l2.p2 { animation-name: arcL2P2; }
+  .on .tot .arc path { animation: march 1.2s linear infinite; }
+  .on .tot .final { animation: route 10s infinite; }
+  .on .tot .endlbl { animation: endlbl 10s infinite; }
+  .on .tot-steps span:nth-child(1) { animation: st1 10s infinite; }
+  .on .tot-steps span:nth-child(2) { animation: st2 10s infinite; }
+  .on .tot-steps span:nth-child(3) { animation: st3 10s infinite; }
+  .on .tot-steps span:nth-child(4) { animation: st4 10s infinite; }
+  @keyframes kw1 { 0%, 3% { fill: var(--ink); } 6%, 93% { fill: var(--gold); font-weight: 600; } 98%, 100% { fill: var(--ink); } }
+  @keyframes kw2 { 0%, 7% { fill: var(--ink); } 10%, 93% { fill: var(--accent); font-weight: 600; } 98%, 100% { fill: var(--ink); } }
+  @keyframes ringIn1 { 0%, 16% { opacity: 0; transform: scale(.3); } 20%, 92% { opacity: 1; transform: scale(1); } 97%, 100% { opacity: 0; transform: scale(1); } }
+  @keyframes ringIn2 { 0%, 23% { opacity: 0; transform: scale(.3); } 27%, 92% { opacity: 1; transform: scale(1); } 97%, 100% { opacity: 0; transform: scale(1); } }
+  @keyframes ringP1 { 0%, 16% { opacity: 0; transform: scale(.3); } 20%, 50% { opacity: 1; transform: scale(1); } 55%, 100% { opacity: 0; transform: scale(1); } }
+  @keyframes ringP2a { 0%, 16% { opacity: 0; transform: scale(.3); } 20%, 63% { opacity: 1; transform: scale(1); } 68%, 100% { opacity: 0; transform: scale(1); } }
+  @keyframes ringP2b { 0%, 23% { opacity: 0; transform: scale(.3); } 27%, 63% { opacity: 1; transform: scale(1); } 68%, 100% { opacity: 0; transform: scale(1); } }
+  @keyframes arcL1 { 0%, 38% { opacity: 0; } 43%, 74% { opacity: 1; } 79%, 100% { opacity: 0; } }
+  @keyframes arcP1 { 0%, 38% { opacity: 0; } 43%, 50% { opacity: 1; } 55%, 100% { opacity: 0; } }
+  @keyframes arcL1P2 { 0%, 38% { opacity: 0; } 43%, 63% { opacity: 1; } 68%, 100% { opacity: 0; } }
+  @keyframes arcL2 { 0%, 53% { opacity: 0; } 58%, 74% { opacity: 1; } 79%, 100% { opacity: 0; } }
+  @keyframes arcL2P2 { 0%, 53% { opacity: 0; } 58%, 63% { opacity: 1; } 68%, 100% { opacity: 0; } }
+  @keyframes march { to { stroke-dashoffset: -16; } }
+  @keyframes route { 0%, 68% { stroke-dashoffset: 360; opacity: 1; } 80%, 93% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+  @keyframes endlbl { 0%, 79% { opacity: 0; } 83%, 93% { opacity: 1; } 98%, 100% { opacity: 0; } }
+  @keyframes st1 { 0%, 1% { color: var(--soft); } 3%, 18% { color: var(--ink); } 21%, 100% { color: var(--soft); } }
+  @keyframes st2 { 0%, 18% { color: var(--soft); } 21%, 36% { color: var(--ink); } 39%, 100% { color: var(--soft); } }
+  @keyframes st3 { 0%, 36% { color: var(--soft); } 39%, 66% { color: var(--ink); } 69%, 100% { color: var(--soft); } }
+  @keyframes st4 { 0%, 66% { color: var(--soft); } 69%, 94% { color: var(--ink); } 97%, 100% { color: var(--soft); } }
+
+  /* ---------- viz 2 · attack surfaces (9s loop) ---------- */
+  .sec .token { fill: var(--accent); }
+  .sec .threat circle.halo { fill: var(--gold); opacity: 0; }
+  .sec .threat circle.core { fill: var(--gold); }
+  .sec .threat .tl, .sec .threat .core, .sec .threat .cross { opacity: 0; }
+  .sec .cross { stroke: var(--card); stroke-width: 1.4; }
+  .sec .feed { stroke: var(--soft); stroke-width: 1.1; fill: none; stroke-dasharray: 2 4; }
+  .sec .good { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; }
+  .sec .bad { fill: none; stroke: var(--gold); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 5 5; opacity: 0; }
+  .on .sec .token { animation: tokenRun 3s linear infinite; }
+  .on .sec .t1 .core, .on .sec .t1 .cross, .on .sec .t1 .tl { animation: tIn1 9s infinite; }
+  .on .sec .t2 .core, .on .sec .t2 .cross, .on .sec .t2 .tl { animation: tIn2 9s infinite; }
+  .on .sec .t3 .core, .on .sec .t3 .cross, .on .sec .t3 .tl { animation: tIn3 9s infinite; }
+  .on .sec .t1 .halo { animation: halo 1.8s ease-out .6s infinite; }
+  .on .sec .t2 .halo { animation: halo 1.8s ease-out 2.6s infinite; }
+  .on .sec .t3 .halo { animation: halo 1.8s ease-out 4.6s infinite; }
+  .on .sec .good { animation: goodFade 9s infinite; }
+  .on .sec .bad { animation: badIn 9s infinite; }
+  @keyframes tokenRun { 0% { transform: translateX(0); opacity: 0; } 6% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateX(440px); opacity: 0; } }
+  @keyframes tIn1 { 0%, 5% { opacity: 0; } 9%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+  @keyframes tIn2 { 0%, 27% { opacity: 0; } 31%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+  @keyframes tIn3 { 0%, 49% { opacity: 0; } 53%, 92% { opacity: 1; } 97%, 100% { opacity: 0; } }
+  @keyframes halo { 0% { opacity: .45; transform: scale(1); } 100% { opacity: 0; transform: scale(2.8); } }
+  @keyframes goodFade { 0%, 66% { opacity: 1; } 72%, 92% { opacity: .25; } 97%, 100% { opacity: 1; } }
+  @keyframes badIn { 0%, 66% { opacity: 0; stroke-dashoffset: 0; } 72% { opacity: 1; } 92% { opacity: 1; stroke-dashoffset: -40; } 97%, 100% { opacity: 0; } }
+
+  /* ---------- viz 3 · red-teaming loop ---------- */
+  .rt .ring { fill: none; stroke: #cfcec2; stroke-width: 2.4; }
+  .rt .orbit { transform-box: view-box; transform-origin: 170px 125px; }
+  .rt .orbit circle { fill: var(--accent); }
+  .rt .stage { fill: var(--card); stroke: var(--ink); stroke-width: 1.2; }
+  .rt .road { fill: #e7e6dc; }
+  .rt .lane { stroke: var(--card); stroke-width: 2; stroke-dasharray: 8 8; }
+  .rt .car { fill: var(--ink); }
+  .rt .ped-body { fill: var(--soft); }
+  .rt .ped-head { fill: var(--soft); }
+  .rt .edited .ped-body, .rt .edited .ped-head { fill: var(--gold); }
+  .rt .sweep { fill: var(--accent); opacity: .12; }
+  .on .rt .orbit { animation: spin 7.5s linear infinite; }
+  .on .rt .stage { animation: stagePulse 7.5s infinite; }
+  .on .rt .stage.s2 { animation-delay: 1.5s; }
+  .on .rt .stage.s3 { animation-delay: 3s; }
+  .on .rt .stage.s4 { animation-delay: 4.5s; }
+  .on .rt .stage.s5 { animation-delay: 6s; }
+  .on .rt .car { animation: drive 7.5s cubic-bezier(.45,.05,.4,1) infinite; }
+  .on .rt .edited .ped-body, .on .rt .edited .ped-head { animation: outfit 22.5s steps(1) infinite; }
+  .on .rt .sweep { animation: sweep 7.5s infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes stagePulse { 0% { fill: var(--accent); } 14%, 90% { fill: var(--card); } 100% { fill: var(--accent); } }
+  @keyframes drive { 0% { transform: translateY(0); opacity: 0; } 8% { opacity: 1; } 70% { transform: translateY(-104px); } 88% { transform: translateY(-104px); opacity: 1; } 100% { transform: translateY(-104px); opacity: 0; } }
+  @keyframes outfit { 0% { fill: var(--gold); } 33.33% { fill: var(--ink); } 66.66% { fill: #8a6a4a; } }
+  @keyframes sweep { 0%, 70% { opacity: 0; } 76%, 90% { opacity: .14; } 100% { opacity: 0; } }
+
+  /* ---------- viz 4 · vector db timing ---------- */
+  .vdb .bar { fill: var(--accent); transform-box: fill-box; transform-origin: left center; transform: scaleX(0); }
+  .vdb .bar.slow { fill: var(--gold); }
+  .vdb .pkt { fill: var(--ink); opacity: 0; }
+  .vdb .pkt.v { fill: var(--gold); }
+  .vdb .idx-node { fill: var(--card); stroke: var(--ink); stroke-width: 1.1; }
+  .vdb .idx-edge { stroke: #cfcec2; stroke-width: 1.6; }
+  .vdb .hot { fill: var(--gold); opacity: 0; }
+  .vdb .infer { opacity: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .on .tot *, .on .sec *, .on .rt *, .on .vdb *, .on .tot-steps span { animation: none !important; }
+    .tot .ring, .tot .arc.l1:not(.p1):not(.p2), .tot .arc.l2:not(.p2), .tot .endlbl { opacity: 1; }
+    .tot .final { stroke-dashoffset: 0; }
+    .sec .threat .tl, .sec .threat .core, .sec .threat .cross { opacity: 1; }
+    .vdb .bar { transform: scaleX(1); }
+    .vdb .hot, .vdb .infer { opacity: 1; }
+  }
+  .vdb .na { fill: var(--accent); }
+  .vdb .nb { fill: var(--gold); opacity: 0; }
+  .vdb .bedge { opacity: 0; }
+  .vdb .region { fill: var(--gold); fill-opacity: .08; stroke: var(--gold); stroke-width: 1.2; stroke-dasharray: 4 4; opacity: 0; }
+  .vdb .probe { fill: none; stroke: var(--accent); stroke-width: 1.6; opacity: 0; }
+  .on .vdb .bar.a1 { animation: barA 10s infinite; }
+  .on .vdb .bar.a2 { animation: barA 10s infinite .35s; }
+  .on .vdb .bar.a3 { animation: barA 10s infinite .7s; }
+  .on .vdb .bar.c1 { animation: barC 10s infinite; }
+  .on .vdb .bar.c2 { animation: barC 10s infinite .35s; }
+  .on .vdb .bar.c3 { animation: barC 10s infinite .7s; }
+  .on .vdb .nb { animation: nbIn 10s infinite; }
+  .on .vdb .nb.b1 { animation-delay: .12s; } .on .vdb .nb.b2 { animation-delay: .24s; } .on .vdb .nb.b3 { animation-delay: .36s; } .on .vdb .nb.b4 { animation-delay: .48s; } .on .vdb .nb.b5 { animation-delay: .6s; }
+  .on .vdb .bedge { animation: bedge 10s infinite; }
+  .on .vdb .probe { animation: probe 10s infinite; }
+  .on .vdb .region { animation: region 10s infinite; }
+  .on .vdb .infer { animation: region 10s infinite; }
+  @keyframes barA { 0%, 6% { transform: scaleX(0); } 14%, 93% { transform: scaleX(1); } 98%, 100% { transform: scaleX(0); } }
+  @keyframes barC { 0%, 54% { transform: scaleX(0); } 64%, 93% { transform: scaleX(1); } 98%, 100% { transform: scaleX(0); } }
+  @keyframes nbIn { 0%, 30% { opacity: 0; transform: scale(.2); } 35%, 93% { opacity: 1; transform: scale(1); } 98%, 100% { opacity: 0; transform: scale(1); } }
+  @keyframes bedge { 0%, 32% { opacity: 0; } 38%, 93% { opacity: 1; } 98%, 100% { opacity: 0; } }
+  @keyframes probe { 0%, 5% { opacity: 0; transform: scale(.4); } 8% { opacity: .9; } 18% { opacity: 0; transform: scale(2.4); } 50% { opacity: 0; transform: scale(.4); } 53% { opacity: .9; } 63%, 100% { opacity: 0; transform: scale(2.4); } }
+  @keyframes region { 0%, 70% { opacity: 0; } 76%, 93% { opacity: 1; } 98%, 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .vdb .nb, .vdb .bedge, .vdb .region { opacity: 1; } }
+</style>
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+  <!-- 0 · top bar -->
+  <div class="top">
+    <div class="wrap">
+      <span class="name">marcelo-moreno</span>
+      <nav class="topnav">
+        <a class="jump" href="#about">About</a>
+        <a class="jump" href="#experience">Experience</a>
+        <a class="jump" href="#research">Research</a>
+        <a class="jump" href="#work">Projects</a>
+        <a class="jump" href="#teaching">Teaching</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- 1 · identity / hero -->
+  <header class="hero">
+    <div class="wrap">
+      <p class="hero-kicker mono"><span class="b">$</span><span class="typed">whoami</span><span class="caret"></span></p>
+      <h1 class="hero-name">Marcelo <span class="hero-last">Moreno</span></h1>
+      <div class="hero-grid">
+        <div class="hero-main">
+          <p class="hero-degree"><span class="cs">Computer Science</span>, <span class="sec">Security Concentration</span></p>
+          <p class="hero-minor">Minor in Design &amp; Innovation</p>
+          <p class="hero-school"><img class="pwordmark" src="./logos/purdue-wordmark.png" alt="Purdue University" /> <span>· Expected Dec 2026</span></p>
+          <div class="hero-meta">
+            <span class="avail"><span class="dot"></span> Open to US roles · Dec 2026</span>
+            <nav class="links">
+              <a class="iclink" href="mailto:mmorenow@purdue.edu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7.5l8.5 6 8.5-6"/></svg>Email</a>
+              <a class="iclink" href="https://www.linkedin.com/in/mmorenow"><img src="./logos/linkedin.png" alt="" />LinkedIn</a>
+              <a class="iclink gh" href="https://github.com/mmorenow" target="_blank" rel="noopener"><img src="./logos/github.png" alt="" />GitHub</a>
+            </nav>
+          </div>
+        </div>
+        <div class="hero-photo">
+          <img src="./photos/marcelo-headshot.jpg" alt="Marcelo Moreno" />
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 1 · about -->
+  <section id="about">
+    <div class="wrap">
+      <div class="sec-head"><span class="n">01</span><span class="label">About</span></div>
+      <div class="about-grid">
+        <div class="about-text">
+          <p>Hi, I'm Marcelo. I'm a final-year student from Lima, Perú, and somewhere along the way security stopped being something I study and became something I genuinely care about. I'm curious by nature, I keep up closely with what's happening in the world, and I ask a lot of questions. Lately most of those questions are about AI, because I find it fascinating how the same technology can be used to protect systems and to attack them, and I'm convinced that AI safety is going to matter enormously for fields like cybersecurity. Exploring everything that sits at that intersection is what excites me most right now.</p>
+          <p>Across a bank, a global exchange, a Big Four firm, and a research lab, I've done the technical side of the job, from monitoring and building to security assessments where you dig into a system to find what's solid, what's broken, and what could improve. Those same teams also taught me the other half, which is working with people and explaining what I found to a vendor, a teammate, or the C-suite. That's where I discovered what I enjoy most, making technical ideas clear to any audience, and it's what Legible grew out of.</p>
+        </div>
+        <div class="about-venn">
+          <svg viewBox="0 0 480 380" role="img" aria-label="Venn diagram: Cybersecurity, AI/Automation, and Communication/Translation, with an arrow pointing to where all three overlap">
+            <defs>
+              <clipPath id="vSec"><circle cx="220" cy="140" r="80" /></clipPath>
+              <clipPath id="vAI"><circle cx="168" cy="224" r="80" /></clipPath>
+              <marker id="varrow" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--accent)" /></marker>
+            </defs>
+            <g clip-path="url(#vSec)"><g clip-path="url(#vAI)">
+              <circle cx="272" cy="224" r="80" class="venn-fill" />
+            </g></g>
+            <circle cx="220" cy="140" r="80" class="venn-circle c1" />
+            <circle cx="168" cy="224" r="80" class="venn-circle c2" />
+            <circle cx="272" cy="224" r="80" class="venn-circle c3" />
+            <text x="220" y="44" class="venn-set" text-anchor="middle">Cybersecurity</text>
+            <text x="112" y="346" class="venn-set" text-anchor="middle">AI/Automation</text>
+            <text x="326" y="346" class="venn-set" text-anchor="middle">Communication/Translation</text>
+            <path class="venn-arrow" d="M404,96 Q330,132 240,190" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#varrow)" />
+            <text x="420" y="70" class="venn-note" text-anchor="middle">This is where</text>
+            <text x="420" y="84" class="venn-note" text-anchor="middle">I land.</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · experience -->
+  <section id="experience">
+    <div class="wrap">
+      <div class="sec-head"><span class="n">02</span><span class="label">Experience</span></div>
+      <ol class="timeline">
+        <li class="tl-item">
+          <span class="tl-date">2026</span>
+          <span class="tl-marker"><span class="tl-dot"></span></span>
+          <div class="tl-body">
+            <details class="tl-d">
+              <summary class="tl-sum">
+                <span class="tl-logo"><img src="./logos/EY_logo_2019.svg.png" alt="EY" /></span>
+                <span class="tl-sumtext">
+                  <span class="tl-co">Ernst &amp; Young</span>
+                  <span class="tl-role">Cybersecurity Consultant I · Lima, Perú · Jun 2026 – Aug 2026</span>
+                </span>
+                <span class="tl-more"></span>
+              </summary>
+              <div class="tl-expand">
+                <p class="tl-about-line">EY is a "Big Four" global professional-services firm, spanning assurance, tax, and advisory across 150+ countries.</p>
+                <div class="tl-narrative">
+                  <p>This past summer I joined EY as a Cybersecurity Consultant, working with several clients and carrying real responsibility from the start. For a global automotive client I first spent time understanding how their Security Operations Center worked and where the gaps were, and from there I proposed and built a monitoring platform that brings everything into one consolidated triage queue, so EY analysts and the client's own team can work from the same place. For a critical infrastructure client I reviewed their cloud security across several providers, and in between I worked on vulnerability management and a few smaller projects.</p>
+                  <p>It took a lot of effort and full commitment, and it was worth it not only for the experience itself but also because I got to learn from some of the best professionals in the field. I also want to highlight the soft skills, since consulting taught me that the job isn't only finding and documenting issues but also explaining them clearly to the people who need to act on them.</p>
+                </div>
+                <div class="tl-photos">
+                  <figure><img src="./photos/ey-firstday.jpg" alt="Marcelo Moreno on his first day at the EY office, Lima" /><figcaption>First Day at the Office</figcaption></figure>
+                  <figure><img src="./photos/ey-night.jpg" alt="The EY office building illuminated at night, Lima" /><figcaption>The Office at Night</figcaption></figure>
+                </div>
+              </div>
+            </details>
+          </div>
+        </li>
+
+        <li class="tl-item">
+          <span class="tl-date">2025</span>
+          <span class="tl-marker"><span class="tl-dot"></span></span>
+          <div class="tl-body">
+            <details class="tl-d">
+              <summary class="tl-sum">
+                <span class="tl-logo"><img src="./logos/Cboe_Global_Markets_Logo.svg.png" alt="Cboe Global Markets" /></span>
+                <span class="tl-sumtext">
+                  <span class="tl-co">Cboe Global Markets</span>
+                  <span class="tl-role">Incident Response Intern · Chicago, IL · Jun 2025 – Aug 2025</span>
+                </span>
+                <span class="tl-more"></span>
+              </summary>
+              <div class="tl-expand">
+                <p class="tl-about-line">Cboe runs some of the world's largest options, equities, futures, and FX markets, across North America, Europe, and Asia Pacific.</p>
+                <div class="tl-narrative">
+                  <p>At Cboe I was an Incident Response intern on the Threat Detection &amp; Response team, inside a 24/7 global SOC where, after an intensive security operations training, I spent the summer investigating alerts from the queue and taking each one through the full triage and escalation process. It showed me how a global SOC really works and why it matters so much, especially when it protects the critical infrastructure behind some of the world's largest markets.</p>
+                  <p>Working inside such an advanced team taught me how much a solid methodology matters, and it also showed me how much room there is to keep improving, even in a mature operation. Along the way I learned new tools, communicated with people across different teams, and researched the best way for employees to bring AI into their day-to-day work.</p>
+                </div>
+                <div class="tl-photos">
+                  <figure><img src="./photos/cboe-solo.jpg" alt="Marcelo Moreno on the Cboe trading floor, Chicago" /><figcaption>Cboe Trading Floor · Chicago</figcaption></figure>
+                  <figure><img src="./photos/cboe-team.jpg" alt="Marcelo Moreno with his team at the Cboe Intern Summit" /><figcaption>Cboe Intern Summit</figcaption></figure>
+                </div>
+              </div>
+            </details>
+          </div>
+        </li>
+
+        <li class="tl-item">
+          <span class="tl-date">2024</span>
+          <span class="tl-marker"><span class="tl-dot"></span></span>
+          <div class="tl-body">
+            <details class="tl-d">
+              <summary class="tl-sum">
+                <span class="tl-logo"><img src="./logos/pursec-lock.png" alt="PurSec Lab" /></span>
+                <span class="tl-sumtext">
+                  <span class="tl-co">PurSec Lab, Purdue</span>
+                  <span class="tl-role">Undergraduate Research Assistant · West Lafayette, IN · May 2024 – Present</span>
+                </span>
+                <span class="tl-more"></span>
+              </summary>
+              <div class="tl-expand">
+                <p class="tl-about-line">PurSec Lab is Purdue's largest security research group, led by Prof. Berkay Celik.</p>
+                <div class="tl-narrative">
+                  <p>In summer 2024 I started <a href="#research">research</a> at PurSec Lab, where I went deep on security and AI by reading and dissecting papers, designing and running experiments, analyzing results, and writing up findings. I enjoyed it so much that it grew into more than two years of AI security research on LLM and VLM systems, which continues to this day.</p>
+                </div>
+                <div class="tl-photos">
+                  <figure><img src="./photos/pursec-2.jpg" alt="Purdue campus, summer 2024" /><figcaption>Purdue Campus Summer 2024</figcaption></figure>
+                </div>
+                <p class="tl-jumpline"><a class="tl-jump" href="#research">See the research</a></p>
+              </div>
+            </details>
+          </div>
+        </li>
+
+        <li class="tl-item">
+          <span class="tl-date">2023</span>
+          <span class="tl-marker"><span class="tl-dot"></span></span>
+          <div class="tl-body">
+            <details class="tl-d">
+              <summary class="tl-sum">
+                <span class="tl-logo"><img src="./logos/Interbank-square.png" alt="Interbank" /></span>
+                <span class="tl-sumtext">
+                  <span class="tl-co">Interbank</span>
+                  <span class="tl-role">Cybersecurity Intern · Lima, Perú · Jun 2023 – Aug 2023</span>
+                </span>
+                <span class="tl-more"></span>
+              </summary>
+              <div class="tl-expand">
+                <p class="tl-about-line">One of Peru's largest banks, part of Intercorp Financial Services, serving millions of retail and commercial clients.</p>
+                <div class="tl-narrative">
+                  <p>Interbank is where it all started. I joined the Detection &amp; Response team just as the bank was evaluating new security technologies from major vendors like IBM, and I helped run a SOC maturity assessment to map out how their security operations would grow over the next few years. It gave me the foundations of cybersecurity and showed me how these teams evolve over time.</p>
+                  <p>They also gave me the chance to present that strategy to the bank's top leadership, which meant translating technical operations into business metrics they could act on. That's where I first saw how much communication matters when the same idea has to reach very different audiences, and it has been a passion of mine ever since.</p>
+                </div>
+                <div class="tl-photos">
+                  <figure><img src="./photos/interbank-team.jpg" alt="Marcelo Moreno with fellow interns on his first day at Interbank" /><figcaption>First Day at the Office</figcaption></figure>
+                </div>
+              </div>
+            </details>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 3 · research -->
+  <section id="research">
+    <div class="wrap">
+      <div class="sec-head"><span class="n">03</span><span class="label">Research</span></div>
+
+      <div class="research-intro">
+        <a href="https://pursec.cs.purdue.edu" target="_blank" rel="noopener"><img src="./logos/PurSecLab.png" alt="PurSec Lab" /></a>
+        <p class="ri-text"><b>2+ years at <a href="https://pursec.cs.purdue.edu" target="_blank" rel="noopener">PurSec Lab</a></b>, Purdue University. Advised by <a href="https://doguhanyeke.github.io" target="_blank" rel="noopener">Doguhan Yeke</a>, under PI <a href="https://beerkay.github.io" target="_blank" rel="noopener">Prof. Berkay Celik</a>. Purdue <a href="https://csrankings.org/#/fromyear/2017/toyear/2026/index?sec&amp;us" target="_blank" rel="noopener">ranks</a> #2 in the U.S. and #5 worldwide for computer security.</p>
+      </div>
+
+      <div class="rs-grid">
+      <article class="rs-card">
+        <div class="rs-viz">
+          <svg class="tot" viewBox="0 0 560 272" role="img" aria-label="Animation of ToT-Nav planning. The instruction go past the red car, turn left, then stop at the blue building is parsed into two landmarks, candidate places are highlighted on a street graph, several candidate routes are explored and pruned, and the route that follows the instruction is drawn.">
+            <rect class="g-chip" x="0" y="0" width="560" height="36" rx="7" />
+            <text class="g-say" x="16" y="23"><tspan fill="var(--soft)">&gt; </tspan>"go past the <tspan class="kw k1">red car</tspan>, turn left, then stop at the <tspan class="kw k2">blue building</tspan>"</text>
+
+            <g>
+              <!-- streets -->
+              <path class="g-edge" d="M40,240 H460 M40,170 H530 M110,100 H530 M40,240 V170 M110,170 V100 M110,240 V170 M180,240 V170 V100 M250,240 V100 M320,240 V170 V100 M390,240 V100 M460,240 V100 M530,170 V100" />
+              <!-- level-1 thoughts: where is the red car? -->
+              <g class="arc l1 p1"><path d="M40,240 Q58,186 110,170" /></g>
+              <g class="arc l1"><path d="M40,240 Q145,186 250,240" /></g>
+              <g class="arc l1 p2"><path d="M40,240 Q215,150 390,240" /></g>
+              <!-- level-2 thoughts: where is the blue building? -->
+              <g class="arc l2"><path d="M250,240 Q205,170 250,100" /></g>
+              <g class="arc l2 p2"><path d="M250,240 Q355,196 460,240" /></g>
+              <g class="arc l2 p2"><path d="M390,240 Q452,176 460,100" /></g>
+              <!-- committed route -->
+              <path class="final" d="M40,240 H250 V100" />
+              <!-- nodes -->
+              <g>
+                <circle class="g-node" cx="110" cy="240" r="4.5" /><circle class="g-node" cx="180" cy="240" r="4.5" /><circle class="g-node" cx="250" cy="240" r="4.5" />
+                <circle class="g-node" cx="320" cy="240" r="4.5" /><circle class="g-node" cx="390" cy="240" r="4.5" /><circle class="g-node" cx="460" cy="240" r="4.5" />
+                <circle class="g-node" cx="110" cy="170" r="4.5" /><circle class="g-node" cx="180" cy="170" r="4.5" /><circle class="g-node" cx="250" cy="170" r="4.5" />
+                <circle class="g-node" cx="320" cy="170" r="4.5" /><circle class="g-node" cx="390" cy="170" r="4.5" /><circle class="g-node" cx="460" cy="170" r="4.5" /><circle class="g-node" cx="530" cy="170" r="4.5" />
+                <circle class="g-node" cx="40" cy="170" r="4.5" /><circle class="g-node" cx="110" cy="100" r="4.5" /><circle class="g-node" cx="180" cy="100" r="4.5" /><circle class="g-node" cx="250" cy="100" r="4.5" /><circle class="g-node" cx="320" cy="100" r="4.5" />
+                <circle class="g-node" cx="390" cy="100" r="4.5" /><circle class="g-node" cx="460" cy="100" r="4.5" /><circle class="g-node" cx="530" cy="100" r="4.5" />
+                <circle class="g-start" cx="40" cy="240" r="6" />
+              </g>
+              <!-- candidate places -->
+              <circle class="ring k1 p1 fb" cx="110" cy="170" r="11" />
+              <circle class="ring k1 fb" cx="250" cy="240" r="11" />
+              <circle class="ring k1 p2 fb" cx="390" cy="240" r="11" />
+              <circle class="ring k2 fb" cx="250" cy="100" r="11" />
+              <circle class="ring k2 p2 fb" cx="460" cy="100" r="11" />
+              <circle class="ring k2 p2 fb" cx="460" cy="240" r="11" />
+              <!-- labels -->
+              <text class="g-lbl" x="40" y="264" text-anchor="middle">start</text>
+              <g class="endlbl">
+                <text class="g-lbl gold" x="250" y="264" text-anchor="middle">red car</text>
+                <text class="g-lbl acc" x="250" y="80" text-anchor="middle">blue building</text>
+              </g>
+            </g>
+          </svg>
+          <div class="rs-steps tot-steps"><span><b>01</b>read the instruction</span><span><b>02</b>find candidate places</span><span><b>03</b>compare routes with an LLM</span><span><b>04</b>commit to the best one</span></div>
+        </div>
+        <div class="rs-body">
+          <div class="rs-head">
+            <h3 class="rs-title"><span class="idx">[01]</span>ToT-Nav · Robot Navigation with a Tree of Thoughts</h3>
+            <span class="status sub">In submission</span>
+          </div>
+          <div class="rs-sub">PurSec Lab · since 2024</div>
+          <p class="rs-one">Turning a plain-language instruction into a robot route, with a language model comparing possible routes side by side.</p>
+          <p class="rs-full">Imagine telling a robot to go past the red car, turn left, and stop at the blue building. ToT-Nav turns that sentence into a route without any navigation training data, because a language model reads the instruction, a vision model finds the places it mentions on a map, and a Tree-of-Thoughts search compares possible routes side by side until only the one that really follows what you said is left. I built the system end to end and evaluated it in indoor homes and on outdoor streets against LM-Nav, the system it extends.</p>
+          <p class="entry-tech">GPT-4o · CLIP ViT-L/14 · Tree-of-Thoughts beam search · Matterport3D R2R · Python</p>
+          <button type="button" class="rs-more" aria-expanded="false"><span class="sr">details</span></button>
+        </div>
+      </article>
+
+      <article class="rs-card">
+        <div class="rs-viz">
+          <svg class="sec" viewBox="0 0 560 232" role="img" aria-label="Diagram of the ToT-Nav pipeline, from the typed instruction through the LLM parser, vision grounding and LLM route ranker to the final route, with three highlighted points where untrusted input reaches a decision, the instruction, the map images and the stored map, and a route that gets diverted away from the goal.">
+            <defs>
+              <marker id="secArrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L6,3 L0,6 Z" fill="var(--ink)" /></marker>
+            </defs>
+            <!-- inputs -->
+            <rect class="g-chip" x="6" y="6" width="126" height="28" rx="6" />
+            <text class="g-lbl ink" x="69" y="24" text-anchor="middle">typed instruction</text>
+            <path class="feed" d="M132,20 H353 V82" />
+            <rect class="g-chip" x="148" y="198" width="126" height="28" rx="6" />
+            <text class="g-lbl ink" x="211" y="216" text-anchor="middle">map images</text>
+            <rect class="g-chip" x="290" y="198" width="126" height="28" rx="6" />
+            <text class="g-lbl ink" x="353" y="216" text-anchor="middle">stored map</text>
+            <path class="g-wire" d="M69,34 V82" marker-end="url(#secArrow)" />
+            <path class="g-wire" d="M211,198 V132" marker-end="url(#secArrow)" />
+            <path class="g-wire" d="M353,198 V132" marker-end="url(#secArrow)" />
+
+            <!-- data moving through the pipeline (passes behind the boxes) -->
+            <circle class="token" cx="0" cy="107" r="4" />
+
+            <!-- pipeline -->
+            <path class="g-wire" d="M132,107 H146" marker-end="url(#secArrow)" />
+            <path class="g-wire" d="M274,107 H288" marker-end="url(#secArrow)" />
+            <path class="g-wire" d="M416,107 H432" marker-end="url(#secArrow)" />
+            <rect class="g-box" x="6" y="84" width="126" height="46" rx="8" />
+            <text class="g-boxtxt" x="69" y="111" text-anchor="middle">LLM parser</text>
+            <rect class="g-box" x="148" y="84" width="126" height="46" rx="8" />
+            <text class="g-boxtxt" x="211" y="111" text-anchor="middle">vision grounding</text>
+            <rect class="g-box" x="290" y="84" width="126" height="46" rx="8" />
+            <text class="g-boxtxt" x="353" y="111" text-anchor="middle">LLM route ranker</text>
+
+            <!-- output: a tiny map with the intended route and a diverted one -->
+            <path class="g-edge" d="M446,130 H546 M486,130 V70 M546,130 V70 M486,70 H546" />
+            <path class="good" d="M446,130 H486 V70" />
+            <path class="bad" d="M446,130 H546 V70" />
+            <circle class="g-start" cx="446" cy="130" r="4.5" />
+            <circle class="g-node" cx="546" cy="130" r="4" /><circle class="g-node" cx="546" cy="70" r="4" />
+            <circle class="g-node" cx="486" cy="130" r="4" />
+            <circle fill="none" stroke="var(--accent)" stroke-width="1.6" cx="486" cy="70" r="10" />
+            <circle class="g-node" cx="486" cy="70" r="4" />
+            <text class="g-lbl acc" x="486" y="52" text-anchor="middle">goal</text>
+            <text class="g-lbl" x="496" y="156" text-anchor="middle">route</text>
+
+            <!-- where untrusted input reaches a decision -->
+            <g class="threat t1">
+              <circle class="halo fb" cx="69" cy="58" r="7" /><circle class="core" cx="69" cy="58" r="7" />
+              <path class="cross" d="M65,58 H73 M69,54 V62" />
+              <text class="tl g-lbl gold" x="82" y="62">prompt injection</text>
+            </g>
+            <g class="threat t2">
+              <circle class="halo fb" cx="211" cy="165" r="7" /><circle class="core" cx="211" cy="165" r="7" />
+              <path class="cross" d="M207,165 H215 M211,161 V169" />
+              <text class="tl g-lbl gold" x="224" y="169">adversarial image</text>
+            </g>
+            <g class="threat t3">
+              <circle class="halo fb" cx="353" cy="165" r="7" /><circle class="core" cx="353" cy="165" r="7" />
+              <path class="cross" d="M349,165 H357 M353,161 V169" />
+              <text class="tl g-lbl gold" x="366" y="169">tampered map</text>
+            </g>
+          </svg>
+          <div class="rs-legend"><span><i class="gold"></i>where untrusted input reaches a decision</span><span><i class="acc"></i>the route that was asked for</span></div>
+        </div>
+        <div class="rs-body">
+          <div class="rs-head">
+            <h3 class="rs-title"><span class="idx">[02]</span>ToT-Nav Security · Attacking the Navigator</h3>
+            <span class="status live"><span class="dot"></span>Ongoing</span>
+          </div>
+          <div class="rs-sub">PurSec Lab · since 2026</div>
+          <p class="rs-one">Looking at the navigator I built through an attacker's eyes, to find where untrusted input can steer it.</p>
+          <p class="rs-full">Once ToT-Nav worked, the natural next question was how someone could break it. So I'm now looking at the system through an attacker's eyes, mapping every point where untrusted input reaches a decision, from the instruction a user types to the images stored in the map, and designing attacks that could send the robot somewhere it was never told to go. It's still early work, and the goal is to understand these risks well enough to defend against them.</p>
+          <p class="entry-tech">threat modeling · adversarial ML · prompt injection · vision-language models</p>
+          <button type="button" class="rs-more" aria-expanded="false"><span class="sr">details</span></button>
+        </div>
+      </article>
+
+      <article class="rs-card">
+        <div class="rs-viz">
+          <svg class="rt" viewBox="0 0 560 244" role="img" aria-label="Animation of the red-teaming loop, change the scene, the model drives, simulate, judge and propose next, next to two copies of the same street where a car approaches a pedestrian, one with the pedestrian's appearance changed and one left untouched as a control.">
+            <!-- the loop -->
+            <circle class="ring" cx="170" cy="125" r="80" />
+            <g class="orbit"><circle cx="170" cy="45" r="4.5" /></g>
+            <circle class="stage s1" cx="170" cy="45" r="7" />
+            <circle class="stage s2" cx="246.1" cy="100.3" r="7" />
+            <circle class="stage s3" cx="217" cy="189.7" r="7" />
+            <circle class="stage s4" cx="123" cy="189.7" r="7" />
+            <circle class="stage s5" cx="93.9" cy="100.3" r="7" />
+            <text class="g-lbl ink" x="170" y="27" text-anchor="middle">change the scene</text>
+            <text class="g-lbl ink" x="259" y="104">model drives</text>
+            <text class="g-lbl ink" x="229" y="212">simulate</text>
+            <text class="g-lbl ink" x="111" y="212" text-anchor="end">judge</text>
+            <text class="g-lbl ink" x="81" y="104" text-anchor="end">propose next</text>
+            <text class="g-lbl" x="170" y="122" text-anchor="middle">automated</text>
+            <text class="g-lbl" x="170" y="136" text-anchor="middle">search</text>
+
+            <!-- the same street, twice -->
+            <text class="g-lbl gold" x="410" y="26" text-anchor="middle">edited</text>
+            <text class="g-lbl" x="496" y="26" text-anchor="middle">control</text>
+            <rect class="road" x="380" y="38" width="60" height="196" rx="4" />
+            <rect class="road" x="466" y="38" width="60" height="196" rx="4" />
+            <path class="lane" d="M410,38 V234 M496,38 V234" />
+            <rect class="sweep" x="372" y="32" width="178" height="204" rx="8" />
+            <g class="edited">
+              <circle class="ped-head" cx="449" cy="78" r="4.5" />
+              <rect class="ped-body" x="444.5" y="84" width="9" height="15" rx="3.5" />
+            </g>
+            <g>
+              <circle class="ped-head" cx="535" cy="78" r="4.5" />
+              <rect class="ped-body" x="530.5" y="84" width="9" height="15" rx="3.5" />
+            </g>
+            <rect class="car" x="416" y="198" width="16" height="26" rx="4" />
+            <rect class="car" x="502" y="198" width="16" height="26" rx="4" />
+          </svg>
+          <div class="rs-legend"><span><i class="gold"></i>the change being tested</span><span><i class="ink"></i>the car driven by the model</span><span><i class="acc"></i>the loop that decides what to try next</span></div>
+        </div>
+        <div class="rs-body">
+          <div class="rs-head">
+            <h3 class="rs-title"><span class="idx">[03]</span>Red-Teaming Vision-Language Driving Models</h3>
+            <span class="status live"><span class="dot"></span>Ongoing</span>
+          </div>
+          <div class="rs-sub">PurSec Lab · since 2026</div>
+          <p class="rs-one">A framework that searches for the everyday street situations where AI driving models fail.</p>
+          <p class="rs-full">Self-driving cars are starting to be driven by vision-language models, so I built a framework that searches for the everyday situations where they fail. Instead of invisible pixel noise it changes things that really happen on a street, like a pedestrian in a hi-vis vest or someone in a bear costume, then lets the model drive through the scene in simulation, judges whether it acted unsafely, and compares every run against the same scene without the change, so a failure only counts when the change caused it. The framework is built, and finding those failure cases is what I'm working on now.</p>
+          <p class="entry-tech">NVIDIA AlpaSim · Alpamayo · 3D Gaussian splatting · Gemini · Python</p>
+          <button type="button" class="rs-more" aria-expanded="false"><span class="sr">details</span></button>
+        </div>
+      </article>
+
+      <article class="rs-card">
+        <div class="rs-viz">
+          <svg class="vdb" viewBox="0 0 560 236" role="img" aria-label="Animation of a timing side channel in a shared vector database. Two tenants store vectors in one shared index. The attacker times its own writes, the victim adds data to the same region, the attacker's writes become slower, and that slowdown reveals where the victim's data lives.">
+            <text class="g-lbl ink" x="168" y="16" text-anchor="middle">one index, shared by two tenants</text>
+            <path class="idx-edge" d="M40,60 L80,110 M80,110 L60,170 M40,60 L120,50 M80,110 L130,140 M60,170 L110,195 M120,50 L170,70 M170,70 L240,55 M240,55 L268,112 M268,112 L250,188 M130,140 L172,186 M172,186 L250,188 M240,55 L292,40 M250,188 L296,160 M130,140 L152,108 M152,108 L170,70 M80,110 L152,108 M110,195 L172,186 M268,112 L296,160 M268,112 L292,40" />
+            <path class="idx-edge bedge" d="M192,112 L152,108 M214,138 L268,112 M203,94 L170,70 M226,114 L268,112 M186,146 L172,186 M210,160 L250,188 M192,112 L203,94 M192,112 L186,146 M214,138 L226,114 M214,138 L210,160" />
+            <circle class="region fb" cx="206" cy="128" r="50" />
+            <circle class="probe fb" cx="206" cy="128" r="16" />
+            <circle class="na" cx="40" cy="60" r="5" />
+            <circle class="na" cx="80" cy="110" r="5" />
+            <circle class="na" cx="60" cy="170" r="5" />
+            <circle class="na" cx="120" cy="50" r="5" />
+            <circle class="na" cx="130" cy="140" r="5" />
+            <circle class="na" cx="110" cy="195" r="5" />
+            <circle class="na" cx="170" cy="70" r="5" />
+            <circle class="na" cx="240" cy="55" r="5" />
+            <circle class="na" cx="268" cy="112" r="5" />
+            <circle class="na" cx="250" cy="188" r="5" />
+            <circle class="na" cx="172" cy="186" r="5" />
+            <circle class="na" cx="292" cy="40" r="5" />
+            <circle class="na" cx="296" cy="160" r="5" />
+            <circle class="na" cx="152" cy="108" r="5" />
+            <circle class="nb fb b0" cx="192" cy="112" r="5" />
+            <circle class="nb fb b1" cx="214" cy="138" r="5" />
+            <circle class="nb fb b2" cx="203" cy="94" r="5" />
+            <circle class="nb fb b3" cx="226" cy="114" r="5" />
+            <circle class="nb fb b4" cx="186" cy="146" r="5" />
+            <circle class="nb fb b5" cx="210" cy="160" r="5" />
+            <text class="g-lbl gold infer" x="206" y="222" text-anchor="middle">tenant B lives here</text>
+            <text class="g-lbl ink" x="352" y="16">attacker times its own writes</text>
+            <path class="g-wire" d="M400,30 V204 H552" />
+            <text class="g-lbl" x="392" y="66" text-anchor="end">before</text>
+            <text class="g-lbl" x="392" y="152" text-anchor="end">after</text>
+            <rect class="bar a1" x="401" y="40" width="46" height="9" rx="2" />
+            <rect class="bar a2" x="401" y="56" width="54" height="9" rx="2" />
+            <rect class="bar a3" x="401" y="72" width="50" height="9" rx="2" />
+            <rect class="bar slow c1" x="401" y="126" width="112" height="9" rx="2" />
+            <rect class="bar slow c2" x="401" y="142" width="128" height="9" rx="2" />
+            <rect class="bar slow c3" x="401" y="158" width="120" height="9" rx="2" />
+            <text class="g-lbl" x="552" y="222" text-anchor="end">write latency →</text>
+          </svg>
+          <div class="rs-legend"><span><i class="acc"></i>the attacker's data</span><span><i class="gold"></i>another tenant's data</span></div>
+        </div>
+        <div class="rs-body">
+          <div class="rs-head">
+            <h3 class="rs-title"><span class="idx">[04]</span>Timing Side Channels in Vector Databases</h3>
+            <span class="status">Exploratory study</span>
+          </div>
+          <div class="rs-sub">PurSec Lab · Aug – Dec 2025</div>
+          <p class="rs-one">Whether timing alone can leak what other customers store in a shared vector database.</p>
+          <p class="rs-full">Many AI apps keep their knowledge in vector databases, and to save money several customers often share the same index behind the scenes. Building on a classic attack against shared search engines, I studied whether timing alone could leak what other customers store, because an attacker can time their own writes, and those writes may slow down when someone else's data sits nearby in the index. I compared how Qdrant, Milvus and Chroma keep tenants apart and built a harness in Qdrant to measure those delays.</p>
+          <p class="entry-tech">Qdrant · HNSW · sentence embeddings · side-channel analysis · Python</p>
+          <button type="button" class="rs-more" aria-expanded="false"><span class="sr">details</span></button>
+        </div>
+      </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · projects -->
+  <section id="work">
+    <div class="wrap">
+      <div class="sec-head"><span class="n">04</span><span class="label">Projects</span></div>
+      <div class="proj-grid">
+      <article class="entry has-media">
+        <figure class="entry-media"><button type="button" class="zoom" aria-label="Enlarge the Legible preview"><img src="./photos/projects/legible-preview.jpg" alt="The Legible project site, showing its title and introduction" loading="lazy" /></button></figure>
+        <div class="entry-head">
+          <div class="entry-title"><span class="idx">[01]</span>Legible</div>
+          <span class="entry-date">Jun 2026 – Present</span>
+        </div>
+        <p>Legible grew out of the part of security work I enjoy most, which is explaining a finding to the person who has to decide about it. It measures what survives when a technical finding gets retold for a board, a regulator or a customer, using a corpus of 3,727 real findings paired with the summaries professionals wrote from them, a rubric with two axes that are never averaged, and three instruments on top, a search for how others retold a similar finding, a benchmark that measures what a model loses when it writes a briefing, and a reviewer that checks a draft against its source as you type.</p>
+        <p class="tl-jumpline"><a class="tl-jump" href="./legible/">See a preview of Legible</a></p>
+      </article>
+      <article class="entry has-media">
+        <div class="entry-media car" data-car aria-roledescription="carousel" aria-label="Semester OS screens">
+          <div class="car-track">
+            <figure class="car-slide"><button type="button" class="zoom" aria-label="Enlarge the courses screen"><img src="./photos/projects/school-courses.jpg" alt="Semester OS courses page with one card per course showing next class, next deadline and grade standing" loading="lazy" /></button><figcaption>Courses · next class, next due, standing</figcaption></figure>
+            <figure class="car-slide"><button type="button" class="zoom" aria-label="Enlarge the grade center screen"><img src="./photos/projects/school-detail.jpg" alt="Semester OS grade center with the current average, secured and lost percentages and a what-if target" loading="lazy" /></button><figcaption>Grade center · what is secured and what a target needs</figcaption></figure>
+            <figure class="car-slide"><button type="button" class="zoom" aria-label="Enlarge the notes screen"><img src="./photos/projects/school-notes.jpg" alt="Semester OS notes page where a typed sentence becomes proposed changes to confirm or discard" loading="lazy" /></button><figcaption>Notes · an agent proposes, I confirm</figcaption></figure>
+          </div>
+          <button type="button" class="car-btn prev" aria-label="Previous screen">&lsaquo;</button>
+          <button type="button" class="car-btn next" aria-label="Next screen">&rsaquo;</button>
+          <div class="car-dots" role="tablist"></div>
+        </div>
+        <div class="entry-head">
+          <div class="entry-title"><span class="idx">[02]</span>Semester OS</div>
+          <span class="entry-date">Aug 2026 – Present</span>
+        </div>
+        <p>A personal dashboard that keeps a whole semester in one place, from the next class and the next deadline to where each grade actually stands. It pulls my calendars, syllabi and course platforms together, works out how much of every grade is already secured and what I would need on the rest to reach a target, and lets me type a note like "the quiz moved to Friday" so a Claude Code agent proposes the exact changes and waits for me to confirm them.</p>
+        <p class="entry-tech">FastAPI · SQLite · React · TypeScript · Claude Code agents · Google Calendar API</p>
+        <p class="media-note">Screens use invented courses.</p>
+      </article>
+      <article class="entry has-media">
+        <figure class="entry-media"><button type="button" class="zoom" aria-label="Enlarge the shell session"><img class="fit" src="./photos/projects/shell-session.jpg" alt="A terminal session in the shell showing wildcards, pipes, redirection, background jobs, expansions, Ctrl-C handling and history" loading="lazy" /></button></figure>
+        <div class="entry-head">
+          <div class="entry-title"><span class="idx">[03]</span>Unix Shell (C / C++)</div>
+          <span class="entry-date">Sep – Nov 2025</span>
+        </div>
+        <p>A Unix shell written from scratch in C++ that behaves like a small bash. It parses each command line with a Flex and Bison grammar, runs programs with fork and exec, and connects pipes, background jobs and every kind of input, output and error redirection through dup2. On top of that it handles Ctrl-C without dying, runs builtins like cd, source and printenv, expands tildes (including other users' home directories), environment variables and wildcards, and comes with its own line editor with cursor movement and command history.</p>
+        <p class="entry-tech">C++ · C · Flex · Bison · POSIX processes and signals</p>
+        <p class="media-note">Illustrative session.</p>
+      </article>
+      <article class="entry">
+        <div class="entry-head">
+          <div class="entry-title"><span class="idx">[04]</span>J.P. Morgan Cybersecurity Simulation</div>
+          <span class="entry-date">Jun 2024</span>
+        </div>
+        <p>Performed fraud analysis on payment services, built a Django OTP system, and developed an ML-based BEC phishing classifier.</p>
+      </article>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- 5 · teaching -->
+  <section id="teaching">
+    <div class="wrap">
+      <div class="sec-head"><span class="n">05</span><span class="label">Teaching</span></div>
+      <div class="teach-top">
+        <div class="teach-text">
+          <p class="teach-lead">This summer I'm sharing everything I know about AI. It's a hands-on course I built from scratch for high school students and incoming college freshmen, the people about to need this most. By the end they can actually use AI instead of just chatting with it: learning faster, automating the repetitive parts of their lives, and building their own apps and workflows, even with zero coding background. Teaching it forces me to make genuinely technical ideas clear to people starting from zero, which is the part I enjoy most.</p>
+        </div>
+      </div>    </div>
+  </section>
+
+  <!-- 6 · organizations -->
+  <section id="orgs">
+    <div class="wrap">
+      <div class="sec-head"><span class="n">06</span><span class="label">Organizations</span></div>
+      <p class="orgs">
+        <span>Blue Team @ Purdue</span>
+        <span>B01lers CTF</span>
+        <span>SHPE (Leading Hispanics in STEM)</span>
+        <span>AI Safety Purdue</span>
+      </p>
+    </div>
+  </section>
+
+
+  <script>
+    (function () {
+      var targets = [].slice.call(document.querySelectorAll('.about-venn svg, .reveal'));
+      function show(el) { el.classList.add(el.matches('.about-venn svg') ? 'venn-in' : 'is-in'); }
+      if (!('IntersectionObserver' in window)) { targets.forEach(show); return; }
+      var io = new IntersectionObserver(function (entries, ob) {
+        entries.forEach(function (e) { if (e.isIntersecting) { show(e.target); ob.unobserve(e.target); } });
+      }, { threshold: 0.2 });
+      targets.forEach(function (el) { io.observe(el); });
+    })();
+    (function () {
+      var vizzes = [].slice.call(document.querySelectorAll('.rs-viz'));
+      if (!('IntersectionObserver' in window)) { vizzes.forEach(function (v) { v.classList.add('on'); }); return; }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { e.target.classList.toggle('on', e.isIntersecting); });
+      }, { threshold: 0.25 });
+      vizzes.forEach(function (v) { io.observe(v); });
+    })();
+    (function () {
+      [].slice.call(document.querySelectorAll('[data-car]')).forEach(function (car) {
+        var track = car.querySelector('.car-track'), slides = [].slice.call(track.children), dots = car.querySelector('.car-dots');
+        var prev = car.querySelector('.prev'), next = car.querySelector('.next');
+        slides.forEach(function (sl, i) {
+          var d = document.createElement('button'); d.type = 'button'; d.setAttribute('role', 'tab'); d.setAttribute('aria-label', 'Screen ' + (i + 1));
+          d.addEventListener('click', function () { go(i); }); dots.appendChild(d);
+        });
+        function idx() { return Math.round(track.scrollLeft / track.clientWidth); }
+        function go(i) { i = Math.max(0, Math.min(slides.length - 1, i)); track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' }); }
+        function sync() { var i = idx(); [].slice.call(dots.children).forEach(function (d, j) { d.setAttribute('aria-selected', String(i === j)); }); prev.disabled = i === 0; next.disabled = i === slides.length - 1; }
+        prev.addEventListener('click', function () { go(idx() - 1); });
+        next.addEventListener('click', function () { go(idx() + 1); });
+        track.addEventListener('scroll', function () { window.requestAnimationFrame(sync); }, { passive: true });
+        car.addEventListener('keydown', function (e) { if (e.key === 'ArrowRight') go(idx() + 1); if (e.key === 'ArrowLeft') go(idx() - 1); });
+        sync();
+      });
+      var box = document.createElement('div'); box.className = 'lightbox'; box.hidden = true; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Enlarged image');
+      var big = document.createElement('img'); box.appendChild(big); document.body.appendChild(box);
+      function close() { box.hidden = true; big.removeAttribute('src'); }
+      box.addEventListener('click', close);
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !box.hidden) close(); });
+      [].slice.call(document.querySelectorAll('.zoom')).forEach(function (b) {
+        b.addEventListener('click', function () { var im = b.querySelector('img'); big.src = im.currentSrc || im.src; big.alt = im.alt; box.hidden = false; });
+      });
+    })();
+    (function () {
+      [].slice.call(document.querySelectorAll('.rs-card')).forEach(function (card) {
+        var btn = card.querySelector('.rs-more'), title = card.querySelector('.rs-title');
+        if (!btn) return;
+        btn.querySelector('.sr').textContent = (title ? title.textContent.replace(/^\[\d+\]/, '').trim() : 'project') + ' details';
+        btn.addEventListener('click', function () {
+          var open = !card.classList.contains('open');
+          card.classList.toggle('open', open);
+          btn.setAttribute('aria-expanded', String(open));
+          if (open) { var top = card.getBoundingClientRect().top; if (top < 70 || top > window.innerHeight * 0.6) card.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        });
+      });
+    })();
+    (function () {
+      var sections = [].slice.call(document.querySelectorAll('main section, body > section')).filter(function (sec) { return sec.querySelector(':scope > .wrap > .sec-head'); });
+      sections.forEach(function (sec) {
+        var wrap = sec.querySelector(':scope > .wrap'), head = wrap.querySelector(':scope > .sec-head');
+        var body = document.createElement('div'), inner = document.createElement('div');
+        body.className = 'sec-body'; inner.className = 'sec-inner'; body.id = sec.id + '-body';
+        while (head.nextSibling) inner.appendChild(head.nextSibling);
+        body.appendChild(inner); wrap.appendChild(body);
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'sec-toggle';
+        btn.setAttribute('aria-expanded', 'true'); btn.setAttribute('aria-controls', body.id);
+        while (head.firstChild) btn.appendChild(head.firstChild);
+        var chev = document.createElement('span'); chev.className = 'chev'; chev.setAttribute('aria-hidden', 'true');
+        btn.appendChild(chev); head.appendChild(btn);
+        body.addEventListener('transitionend', function (e) { if (e.target === body) body.classList.remove('anim'); });
+        btn.addEventListener('click', function () { setOpen(sec, sec.classList.contains('collapsed')); });
+      });
+      function setOpen(sec, open) {
+        var body = sec.querySelector('.sec-body'), btn = sec.querySelector('.sec-toggle');
+        if (!body) return;
+        body.classList.add('anim');
+        sec.classList.toggle('collapsed', !open);
+        btn.setAttribute('aria-expanded', String(open));
+      }
+      [].slice.call(document.querySelectorAll('a[href^="#"]')).forEach(function (a) {
+        a.addEventListener('click', function () {
+          var t = document.getElementById(a.getAttribute('href').slice(1));
+          var sec = t && (t.matches('section') ? t : t.closest('section'));
+          if (sec && sec.classList.contains('collapsed')) setOpen(sec, true);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

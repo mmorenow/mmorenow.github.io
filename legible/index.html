@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>legible-sec · Marcelo Moreno</title>
+<meta name="description" content="legible-sec helps security professionals retell findings so nothing important gets lost and the reader understands. Ongoing research by Marcelo Moreno, open source soon." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #1f2421; --soft: #6a716b; --body: #3c423d; --paper: #f3f2ec; --card: #fafaf6; --rule: #d9d8cd; --rule2: #cfcec2;
+    --accent: oklch(0.52 0.11 232); --gold: #8e6f3e;
+    --acc-t: color-mix(in oklch, var(--accent) 11%, transparent); --gold-t: color-mix(in srgb, var(--gold) 13%, transparent);
+    --mono: "IBM Plex Mono", ui-monospace, monospace; --sans: "IBM Plex Sans", system-ui, sans-serif;
+    --ease: cubic-bezier(.2,.7,.2,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 70px; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .wrap { max-width: 900px; margin: 0 auto; padding-inline: clamp(16px, 5vw, 52px); }
+  .wide { max-width: 1080px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 44px); }
+  .mono { font-family: var(--mono); }
+  .label { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--soft); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* top bar */
+  .top { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--rule); background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(8px); }
+  .top .wide { display: flex; justify-content: space-between; align-items: center; padding-block: 13px; gap: 14px; }
+  .brand { font-family: var(--mono); font-weight: 500; font-size: 14px; text-decoration: none; white-space: nowrap; }
+  .brand::before { content: "~/ "; color: var(--accent); }
+  .brand .v { color: var(--soft); font-size: 11px; margin-left: 6px; }
+  .topnav { display: flex; align-items: center; gap: 4px; }
+  .topnav a { font-family: var(--mono); font-size: 12.5px; color: var(--soft); text-decoration: none; padding: 6px 9px; border-radius: 6px; transition: .15s; }
+  .topnav a:hover { color: var(--ink); background: var(--card); }
+  .topnav .back { color: var(--ink); border: 1px solid var(--ink); }
+  .topnav .back:hover { background: var(--ink); color: var(--paper); }
+  @media (max-width: 760px) { .topnav .j { display: none; } }
+
+  /* sections */
+  section { padding-block: clamp(56px, 8vw, 104px); border-top: 1px solid var(--rule); }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+  .sec-head .n { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+  .sec-head .label { font-family: var(--sans); font-size: clamp(30px, 4.2vw, 46px); line-height: 1.08; letter-spacing: -0.024em; font-weight: 600; color: var(--ink); text-transform: none; }
+  h2 { font-size: clamp(18px, 2.1vw, 23px); line-height: 1.38; letter-spacing: -0.012em; font-weight: 500; color: var(--body); max-width: 40ch; text-wrap: pretty; margin-bottom: 2px; }
+  .lede { font-size: clamp(16.5px, 1.9vw, 19px); line-height: 1.62; color: var(--body); max-width: 64ch; margin-top: 18px; text-wrap: pretty; }
+  .lede + .lede { margin-top: 12px; }
+  .lede b { color: var(--ink); font-weight: 600; }
+  .note { font-family: var(--mono); font-size: 11.5px; color: var(--soft); line-height: 1.55; }
+  .note b { color: var(--ink); font-weight: 500; }
+  .reveal { transition: opacity .7s var(--ease), transform .7s var(--ease); }
+  .js .reveal { opacity: 0; transform: translateY(18px); }
+  .js .reveal.in { opacity: 1; transform: none; }
+
+  /* status glyphs */
+  .st { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 11px; color: var(--ink); border: 1px solid var(--rule); background: var(--card); border-radius: 100px; padding: 4px 11px 4px 9px; white-space: nowrap; }
+  .g { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+  .g.ship { background: var(--accent); }
+  .g.prog { border: 1.5px solid var(--accent); background: linear-gradient(90deg, var(--accent) 50%, transparent 50%); }
+  .g.plan { border: 1.5px dashed var(--soft); }
+  .g.held { border-radius: 2px; border: 1.5px solid var(--gold); background: repeating-linear-gradient(45deg, var(--gold) 0 1.5px, transparent 1.5px 4px); }
+  .g.arch { border: 1.5px solid var(--rule2); }
+
+  /* ghost = what left */
+  .ghost { color: var(--gold); text-decoration: line-through; text-decoration-thickness: 1px; }
+  mark { background: none; color: inherit; }
+  .ev { color: var(--accent); background: var(--acc-t); border-radius: 3px; padding: 0 1px; }
+
+  /* ---------------- hero ---------------- */
+  header.hero { padding-block: clamp(50px, 8vw, 100px) clamp(40px, 6vw, 70px); }
+  h1 { font-family: var(--mono); font-size: clamp(40px, 7.4vw, 80px); line-height: 1.0; letter-spacing: -0.045em; font-weight: 600; color: var(--ink); }
+  .hero-lede { font-size: clamp(17px, 2vw, 20.5px); line-height: 1.62; color: var(--body); max-width: 60ch; margin-top: 24px; text-wrap: pretty; }
+  .hero-lede a { color: var(--ink); text-decoration: none; box-shadow: inset 0 -1.5px 0 var(--accent); transition: color .15s; }
+  .hero-lede a:hover { color: var(--accent); }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .tag { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 11.5px; color: var(--ink); border: 1px solid var(--rule); background: var(--card); border-radius: 100px; padding: 4px 11px; white-space: nowrap; }
+  .tag i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2.4s ease-out infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 55%, transparent); } 70%, 100% { box-shadow: 0 0 0 7px transparent; } }
+  .byline { font-family: var(--mono); font-size: 12px; color: var(--soft); margin-top: 16px; }
+  .byline a { color: var(--accent); text-decoration: none; }
+
+  .ms { margin-top: clamp(38px, 6vw, 60px); border: 1px solid var(--rule); background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: 0 10px 40px rgba(31,36,33,.06); }
+  .ms-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
+  .ms-top .src { font-family: var(--mono); font-size: 11px; color: var(--soft); }
+  .ms-top .src a { color: var(--accent); text-decoration: none; }
+  .ms-ctx { padding: 14px 18px 0; font-size: 14px; color: var(--soft); line-height: 1.5; }
+  .ms-ctx b { color: var(--ink); font-weight: 500; }
+  .ms-grid { display: grid; grid-template-columns: 1.08fr 1fr; gap: 16px; padding: 14px 18px 18px; }
+  .ms-half { border: 1px solid var(--rule); border-radius: 11px; padding: 14px 16px 16px; background: var(--paper); transition: opacity .6s ease, border-color .5s; }
+  .ms-half h4 { font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--soft); margin-bottom: 9px; display: flex; justify-content: space-between; gap: 8px; }
+  .ms-half h4 b { color: var(--ink); font-weight: 500; }
+  .ms-half p { font-size: clamp(14px, 1.5vw, 15.5px); line-height: 1.66; color: var(--body); }
+  .ms .jg, .ms .k { border-radius: 3px; transition: color .45s, background-color .45s, box-shadow .45s; }
+  .ms.p1 .jg { color: var(--gold); box-shadow: inset 0 -1.5px 0 color-mix(in srgb, var(--gold) 55%, transparent); }
+  .ms .ret { opacity: .28; }
+  .ms.p2 .ret, .ms.p3 .ret, .ms.p4 .ret { opacity: 1; border-color: var(--ink); }
+  .ms.p3 .k.a, .ms.p4 .k.a { color: var(--ink); background: var(--acc-t); box-shadow: inset 0 -1.5px 0 var(--accent); }
+  .ms.p4 .k.b { color: var(--ink); background: var(--gold-t); box-shadow: inset 0 -1.5px 0 var(--gold); }
+  .ms.p3 .k.a .jg, .ms.p4 .k .jg { color: inherit; box-shadow: none; }
+  .ms-led { border-top: 1px dashed var(--rule); padding: 12px 18px 15px; display: grid; gap: 7px; }
+  .ms-led .row { display: grid; grid-template-columns: 110px 1fr 22px 1fr; gap: 10px; align-items: baseline; font-family: var(--mono); font-size: 12px; color: var(--body); opacity: .28; transition: opacity .45s ease; }
+  .ms-led .row .lab { color: var(--soft); }
+  .ms-led .row .ar { color: var(--soft); text-align: center; }
+  .ms-led .row .to { color: var(--ink); font-weight: 500; }
+  .ms.p1 .ms-led .r1, .ms.p2 .ms-led .r1, .ms.p3 .ms-led .r1, .ms.p4 .ms-led .r1 { opacity: 1; }
+  .ms.p3 .ms-led .r2, .ms.p4 .ms-led .r2 { opacity: 1; }
+  .ms.p4 .ms-led .r3 { opacity: 1; }
+  .ms-led .r2 .to { color: var(--accent); } .ms-led .r3 .to { color: var(--gold); }
+  @media (max-width: 760px) { .ms-grid { grid-template-columns: 1fr; } .ms-led .row { grid-template-columns: 1fr; gap: 1px; } .ms-led .row .ar { display: none; } .ms-led .row + .row { margin-top: 6px; } }
+
+  /* ---------------- problem ---------------- */
+  .intro { font-size: clamp(18px, 2.1vw, 23px); line-height: 1.38; letter-spacing: -0.012em; font-weight: 500; color: var(--body); max-width: 44ch; text-wrap: pretty; }
+  .intro .soft { color: var(--soft); }
+  .fails { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(22px, 4vw, 48px); margin-top: clamp(34px, 5vw, 52px); }
+  .fails h3 { font-family: var(--mono); font-size: 12.5px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--ink); }
+  .fails h3 i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .fails .lost h3 i { background: var(--gold); }
+  .fails .land h3 i { border: 1.5px solid var(--accent); }
+  .fails ul { list-style: none; }
+  .fails li { padding: 15px 0; border-bottom: 1px dashed var(--rule); font-size: 15.5px; line-height: 1.55; color: var(--body); }
+  .fails li b { color: var(--ink); font-weight: 600; }
+  .mx { display: block; margin-top: 7px; font-family: var(--mono); font-size: 12.5px; color: var(--soft); }
+  .mx s { position: relative; text-decoration: none; color: var(--gold); }
+  .mx s::after { content: ""; position: absolute; left: -1px; right: -1px; top: 55%; height: 1.5px; background: var(--gold); transform-origin: left; transform: scaleX(1); transition: transform .5s var(--ease) .35s; }
+  .js .fails li:not(.in) .mx s::after { transform: scaleX(0); }
+  .mx .new { color: var(--ink); }
+  .mx .q { color: var(--soft); border: 1px dashed var(--rule2); border-radius: 4px; padding: 0 5px; margin-right: 4px; white-space: nowrap; }
+  .mx .hl { color: var(--accent); }
+  .js .fails li { opacity: 0; transform: translateY(10px); transition: opacity .5s var(--ease), transform .5s var(--ease); }
+  .js .fails li.in { opacity: 1; transform: none; }
+  .closer { margin-top: clamp(34px, 5vw, 50px); font-size: clamp(17px, 2vw, 20px); line-height: 1.6; color: var(--body); max-width: 62ch; }
+  .closer b { color: var(--ink); font-weight: 600; }
+  @media (max-width: 760px) { .fails { grid-template-columns: 1fr; } }
+  /* ---------------- corpus ---------------- */
+  .corp { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(24px, 5vw, 56px); margin-top: 42px; align-items: center; }
+  .docsvg { width: 100%; height: auto; display: block; overflow: visible; }
+  .docsvg .pg { fill: var(--card); stroke: var(--ink); stroke-width: 1.2; }
+  .docsvg .ln { stroke: var(--rule2); stroke-width: 3; stroke-linecap: round; }
+  .docsvg .hl { fill: var(--acc-t); stroke: var(--accent); stroke-width: 1.4; }
+  .docsvg .hl.g2 { fill: var(--gold-t); stroke: var(--gold); }
+  .docsvg .wire { fill: none; stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: 5 4; }
+  .docsvg text { font-family: var(--mono); font-size: 11px; fill: var(--soft); }
+  .docsvg text.i { fill: var(--ink); font-weight: 500; }
+  .js .docsvg .hl, .js .docsvg .dl { opacity: 0; transition: opacity .5s ease; }
+  .js .docsvg .wire { opacity: 0; transition: opacity .5s ease .9s; }
+  .js .docsvg .hl.g2 { transition-delay: .35s; }
+  .js .docsvg .dl { transition-delay: 1.2s; }
+  .docsvg.in .hl, .docsvg.in .wire, .docsvg.in .dl { opacity: 1; }
+  /* benchmark figure, paper style */
+  .fig { margin: 30px 0 0; padding: 0; }
+  .figrow { display: grid; grid-template-columns: 1.25fr 34px 0.85fr 34px 1fr; gap: 0; align-items: stretch; }
+  .fcard { border: 1px solid var(--rule); border-radius: 10px; background: var(--card); padding: 14px 15px 15px; display: flex; flex-direction: column; }
+  .flab { font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--soft); display: block; margin-bottom: 10px; }
+  .farrow { display: flex; align-items: center; justify-content: center; }
+  .farrow svg { width: 34px; height: 12px; fill: none; stroke: var(--ink); stroke-width: 1.3; opacity: .55; }
+  .figdown { display: flex; justify-content: center; }
+  .figdown svg { width: 12px; height: 34px; fill: none; stroke: var(--ink); stroke-width: 1.3; opacity: .55; }
+  .pmt { font-size: 12.5px; line-height: 1.5; }
+  .pmt .sys, .pmt .aud { margin: 0 0 8px; color: var(--body); }
+  .pmt span { font-family: var(--mono); font-size: 10px; color: var(--soft); display: block; margin-bottom: 3px; }
+  .pmt .aud b { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 1px 6px; margin-right: 5px; }
+  .pmt .aud i { font-family: var(--mono); font-size: 11px; font-style: normal; color: var(--soft); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 6px; margin-right: 4px; display: inline-block; }
+  .fnd { border-left: 2px solid var(--rule2); padding-left: 10px; margin-top: 10px; }
+  .fnd p { margin: 0; font-size: 12px; line-height: 1.5; color: var(--body); }
+  .mlist { list-style: none; margin: 0 0 10px; padding: 0; }
+  .mlist li { font-family: var(--mono); font-size: 12px; color: var(--body); display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--rule); }
+  .mlist li:last-child { border-bottom: 0; }
+  .mlist i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--ink); flex: none; }
+  .mnote { font-size: 11.5px; line-height: 1.45; color: var(--soft); margin: auto 0 0; }
+  .outp { border: 1px dashed var(--rule2); border-radius: 6px; padding: 10px 11px; margin-bottom: 10px; }
+  .outp p { margin: 0; font-size: 12px; line-height: 1.55; color: var(--body); }
+  .outp .gh { background: var(--acc-t); border-radius: 3px; padding: 0 3px; }
+  .fpanel { border: 1px solid var(--rule); border-radius: 10px; background: var(--card); padding: 14px 15px 15px; }
+  .fpgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .fp b { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+  .fp p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--body); }
+  .fig figcaption { font-size: 11.5px; line-height: 1.5; color: var(--soft); margin-top: 12px; }
+  @media (max-width: 860px) {
+    .figrow { grid-template-columns: 1fr; }
+    .farrow { transform: rotate(90deg); padding: 6px 0; }
+    .fcard + .farrow + .fcard { margin-top: 0; }
+    .fpgrid { grid-template-columns: 1fr; gap: 12px; }
+  }
+  .shapes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; margin-top: 12px; }
+  .shape { background: var(--card); padding: 18px 18px 20px; }
+  .shape svg { width: 100%; max-width: 150px; height: auto; display: block; margin-bottom: 14px; overflow: visible; }
+  .shape svg .d { fill: none; stroke: var(--ink); stroke-width: 1.2; }
+  .shape svg .l { stroke: var(--rule2); stroke-width: 2.4; stroke-linecap: round; fill: none; }
+  .shape svg .a { fill: var(--acc-t); stroke: var(--accent); stroke-width: 1.2; }
+  .shape svg .b { fill: var(--gold-t); stroke: var(--gold); stroke-width: 1.2; }
+  .shape svg .b.o { fill: var(--gold-t); }
+  .shape svg .w { fill: none; stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .shape svg .env-f { stroke-dasharray: none; }
+  .shape svg text.t { font-family: var(--mono); font-size: 8px; fill: var(--soft); }
+  .shape h4 { font-size: 14px; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .shape p { font-size: 12.5px; line-height: 1.5; color: var(--body); margin: 0; }
+  .facts.wide4 { grid-template-columns: repeat(4, 1fr); margin-top: 24px; }
+  @media (max-width: 900px) { .shapes { grid-template-columns: repeat(2, 1fr); } .facts.wide4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .shapes { grid-template-columns: 1fr; } }
+  .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+  .fact { background: var(--card); padding: 16px 18px; }
+  .fact b { display: block; font-size: clamp(26px, 3.4vw, 34px); letter-spacing: -0.02em; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .fact span { font-family: var(--mono); font-size: 11px; color: var(--soft); }
+  .subgrid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(22px, 4vw, 44px); margin-top: 44px; }
+  .bars { display: grid; gap: 8px; margin-top: 14px; }
+  .bar { display: grid; grid-template-columns: 118px 1fr 48px; gap: 10px; align-items: center; font-family: var(--mono); font-size: 11.5px; color: var(--body); }
+  .bar .t { height: 8px; background: color-mix(in srgb, var(--rule) 55%, transparent); border-radius: 4px; overflow: hidden; }
+  .bar .t i { display: block; height: 100%; background: var(--accent); border-radius: 4px; transform-origin: left; transition: transform .9s var(--ease); }
+  .js .bars:not(.in) .t i { transform: scaleX(0) !important; }
+  .bar .c { text-align: right; font-variant-numeric: tabular-nums; }
+  .lic { margin-top: 14px; }
+  .lictrack { display: flex; height: 14px; border-radius: 7px; overflow: hidden; border: 1px solid var(--rule); }
+  .lictrack .a { background: var(--accent); flex: 2586; transform-origin: left; transition: transform .9s var(--ease); }
+  .lictrack .w { flex: 1141; background: repeating-linear-gradient(45deg, var(--gold) 0 2px, transparent 2px 6px); opacity: .7; transition: opacity .6s ease .8s; }
+  .js .lic:not(.in) .lictrack .a { transform: scaleX(0); }
+  .js .lic:not(.in) .lictrack .w { opacity: 0; }
+  .lickey { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; font-family: var(--mono); font-size: 11.5px; color: var(--body); flex-wrap: wrap; }
+  .lickey b { font-weight: 600; } .lickey .a b { color: var(--accent); } .lickey .w b { color: var(--gold); }
+  .fieldnotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 40px; }
+  .holds { display: flex; flex-direction: column; gap: 12px; }
+  .hold { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: baseline; padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
+  .hold:last-child { border-bottom: 0; padding-bottom: 0; }
+  .hold b { font-family: var(--mono); font-size: 19px; font-weight: 600; color: var(--accent); }
+  .hold span { font-size: 13.5px; line-height: 1.5; color: var(--body); }
+  .fn { padding: 0; }
+  .fn .label { color: var(--gold); display: block; margin-bottom: 6px; }
+  .fn p { font-size: 14px; color: var(--body); line-height: 1.55; }
+  .fn code { font-family: var(--mono); font-size: 12.5px; color: var(--ink); background: var(--card); border: 1px solid var(--rule); padding: 0 4px; border-radius: 4px; }
+  @media (max-width: 820px) { .corp, .subgrid { grid-template-columns: 1fr; } .fieldnotes { grid-template-columns: 1fr; } }
+
+  /* ---------------- rubric ---------------- */
+  .axes { display: grid; grid-template-columns: 1fr 34px 1fr; margin-top: 44px; align-items: stretch; }
+  .axis h3 { font-family: var(--mono); font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .axis h3 b { color: var(--accent); font-size: 18px; margin-right: 6px; }
+  .axis .q { font-size: 13.5px; color: var(--soft); line-height: 1.5; margin-bottom: 14px; min-height: 3em; }
+  .never { position: relative; display: flex; justify-content: center; }
+  .never::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 1px dashed var(--rule2); }
+  .never span { position: sticky; top: 45%; writing-mode: vertical-rl; transform: rotate(180deg); font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; color: var(--gold); background: var(--paper); padding: 10px 0; height: max-content; margin-top: 90px; }
+  .dim { display: block; width: 100%; text-align: left; border: 1px solid var(--rule); background: var(--card); border-radius: 10px; padding: 11px 14px; margin-bottom: 8px; transition: border-color .2s, transform .25s var(--ease); }
+  .dim:hover, .dim:focus-visible, .dim[aria-expanded="true"] { border-color: var(--ink); }
+  .dim .dh { display: flex; align-items: baseline; gap: 9px; }
+  .dim .id { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+  .dim .nm { font-size: 14.5px; font-weight: 500; flex: 1; }
+  .dim .bi { font-family: var(--mono); font-size: 10.5px; color: var(--gold); white-space: nowrap; }
+  .dim .dq { font-size: 13px; color: var(--soft); margin-top: 3px; line-height: 1.45; }
+  .dim .chk { display: flex; flex-wrap: wrap; gap: 5px; max-height: 0; overflow: hidden; opacity: 0; transition: max-height .35s var(--ease), opacity .3s, margin .3s; }
+  .dim:hover .chk, .dim:focus-visible .chk, .dim[aria-expanded="true"] .chk { max-height: 120px; opacity: 1; margin-top: 9px; }
+  .chip { font-family: var(--mono); font-size: 10.5px; padding: 3px 8px; border-radius: 5px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); white-space: nowrap; }
+  .chip .l { color: var(--soft); margin-right: 4px; }
+  .chip.un { border-style: dashed; color: var(--soft); }
+  .bid { display: none; margin-top: 8px; font-size: 12.5px; color: var(--body); }
+  .dim:hover .bid, .dim:focus-visible .bid, .dim[aria-expanded="true"] .bid { display: block; }
+  .bid .sl { display: inline-flex; gap: 4px; align-items: center; font-family: var(--mono); font-size: 10.5px; }
+  .bid .sl span { padding: 1px 6px; border-radius: 4px; border: 1px solid var(--rule); }
+  .bid .sl .mv { animation: slide 1.8s var(--ease) infinite; color: var(--gold); border-color: var(--gold); }
+  @keyframes slide { 0%, 20% { transform: translateX(0); } 45%, 55% { transform: translateX(-26px); } 80%, 100% { transform: translateX(26px); } }
+  @media (max-width: 760px) { .axes { grid-template-columns: 1fr; } .never { height: 40px; } .never::before { top: 50%; bottom: auto; left: 0; right: 0; border-left: 0; border-top: 1px dashed var(--rule2); } .never span { writing-mode: horizontal-tb; transform: none; position: relative; top: auto; margin: 0; padding: 0 10px; align-self: center; } .dim .chk { max-height: 120px; opacity: 1; margin-top: 9px; } }
+
+  .ladder { margin-top: 56px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .rung { border-top: 2px solid var(--ink); padding-top: 12px; }
+  .rung.l1 { border-top-color: var(--soft); }
+  .rung.l2 { border-top: 2px dashed var(--soft); }
+  .rung.h { border-top: 2px solid var(--rule2); }
+  .rung .label { color: var(--ink); display: block; margin-bottom: 6px; }
+  .rung .label b { color: var(--accent); margin-right: 6px; }
+  .rung p { font-size: 13.5px; color: var(--body); line-height: 1.5; }
+  .rung em { font-style: normal; font-family: var(--mono); font-size: 11.5px; color: var(--soft); display: block; margin-top: 8px; }
+  .js .ladder .rung { opacity: 0; transform: translateY(10px); transition: .5s var(--ease); }
+  .ladder.in .rung { opacity: 1; transform: none; }
+  .ladder.in .rung:nth-child(2) { transition-delay: .15s; } .ladder.in .rung:nth-child(3) { transition-delay: .3s; } .ladder.in .rung:nth-child(4) { transition-delay: .45s; }
+  @media (max-width: 760px) { .ladder { grid-template-columns: 1fr 1fr; } }
+
+  .behave { margin-top: 56px; border: 1px solid var(--rule); background: var(--card); border-radius: 14px; padding: clamp(18px, 3vw, 28px); }
+  .behave h3 { font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+  .behave .sub { font-size: 14px; color: var(--soft); margin-top: 4px; max-width: 62ch; }
+  .adh { margin-top: 20px; display: grid; gap: 9px; position: relative; }
+  .adh .r { display: grid; grid-template-columns: minmax(0, 250px) 1fr 44px; gap: 12px; align-items: center; font-size: 13.5px; color: var(--body); }
+  .adh .r .t { position: relative; height: 10px; background: color-mix(in srgb, var(--rule) 55%, transparent); border-radius: 5px; }
+  .adh .r .t i { position: absolute; left: 0; right: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--rule2); transform-origin: left; transition: transform 1s var(--ease); }
+  .adh .r.ok .t i { background: var(--accent); }
+  .adh .r .t::after { content: ""; position: absolute; left: 70%; top: -5px; bottom: -5px; border-left: 1px dashed var(--ink); }
+  .adh .r .p { font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  .adh .r.hot { color: var(--ink); font-weight: 500; }
+  .adh .r.hot .p { color: var(--gold); font-weight: 600; }
+  .js .adh:not(.in) .t i { transform: scaleX(0) !important; }
+  .adh-key { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; }
+  @media (max-width: 560px) { .adh .r { grid-template-columns: 1fr 44px; } .adh .r .t { grid-column: 1 / -1; grid-row: 2; } }
+
+  /* ---------------- instruments shared ---------------- */
+  .inst-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 24px; flex-wrap: wrap; }
+  .demo { margin-top: 36px; border: 1px solid var(--rule); background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: 0 10px 40px rgba(31,36,33,.05); }
+  .demo-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 1px solid var(--rule); background: color-mix(in srgb, var(--paper) 60%, var(--card)); flex-wrap: wrap; }
+  .demo-top .dots { display: flex; gap: 6px; } .demo-top .dots i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--rule2); }
+  .demo-top .ttl { font-family: var(--mono); font-size: 11.5px; color: var(--soft); }
+  .demo-foot { border-top: 1px dashed var(--rule); padding: 11px 16px; }
+  textarea { width: 100%; font: 15px/1.55 var(--sans); color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; resize: vertical; }
+  textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--acc-t); }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { font-family: var(--mono); font-size: 11.5px; padding: 5px 10px; border-radius: 100px; border: 1px solid var(--rule); background: var(--card); transition: .15s; }
+  .pill:hover { border-color: var(--ink); }
+  .pill[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* retrieval */
+  .rv { display: grid; grid-template-columns: 1fr; }
+  .rv-in { padding: 16px; display: grid; gap: 10px; border-bottom: 1px solid var(--rule); }
+  .rv-out { padding: 6px 16px 16px; display: grid; gap: 10px; min-height: 120px; }
+  .rv-meta { font-family: var(--mono); font-size: 11.5px; color: var(--soft); padding-top: 10px; }
+  .hit { border: 1px solid var(--rule); border-radius: 10px; background: var(--paper); overflow: hidden; animation: hitin .35s var(--ease) both; }
+  @keyframes hitin { from { opacity: 0; transform: translateY(6px); } }
+  .hit-h { display: flex; justify-content: space-between; gap: 8px; padding: 9px 13px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 11px; color: var(--soft); flex-wrap: wrap; }
+  .hit-h b { color: var(--ink); font-weight: 500; }
+  .hit-h a { color: var(--accent); text-decoration: none; }
+  .hit-b { display: grid; grid-template-columns: 1fr 1fr; }
+  .hit-b > div { padding: 11px 13px; font-size: 13.5px; line-height: 1.55; color: var(--body); }
+  .hit-b > div + div { border-left: 1px dashed var(--rule); }
+  .hit-b .label { display: block; margin-bottom: 4px; font-size: 10px; }
+  .hit-s { padding: 7px 13px; border-top: 1px dashed var(--rule); font-family: var(--mono); font-size: 11px; color: var(--soft); }
+  .hit-s b { color: var(--accent); font-weight: 500; }
+  .empty { font-family: var(--mono); font-size: 12.5px; color: var(--soft); padding: 22px 4px; }
+  @media (max-width: 640px) { .hit-b { grid-template-columns: 1fr; } .hit-b > div + div { border-left: 0; border-top: 1px dashed var(--rule); } }
+
+  /* benchmark */
+  .errs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 30px; }
+  .err { border: 1px solid var(--rule); background: var(--card); border-radius: 10px; padding: 13px 13px 14px; }
+  .err .label { display: flex; justify-content: space-between; gap: 6px; }
+  .err .label b { color: var(--accent); font-weight: 500; }
+  .err h4 { font-size: 15px; font-weight: 600; margin: 6px 0 5px; line-height: 1.25; }
+  .err p { font-size: 12.5px; color: var(--soft); line-height: 1.45; }
+  .err .fx { font-family: var(--mono); font-size: 12.5px; margin-top: 9px; color: var(--body); line-height: 1.5; }
+  @media (max-width: 900px) { .errs { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .errs { grid-template-columns: 1fr; } }
+  .btn { font-family: var(--mono); font-size: 12.5px; padding: 7px 13px; border-radius: 7px; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); transition: .15s; }
+  .btn.ghostb { background: transparent; color: var(--ink); }
+  .btn.ghostb:hover { background: var(--ink); color: var(--paper); }
+
+  .pipe { margin-top: 34px; border: 1px solid var(--rule); background: var(--card); border-radius: 14px; padding: clamp(14px, 2.4vw, 24px); }
+  .pipe svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .pipe .bx { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2; }
+  .pipe .bx.rv { fill: var(--acc-t); stroke: var(--accent); }
+  .pipe .tt { font-family: var(--mono); font-size: 12px; fill: var(--ink); font-weight: 500; }
+  .pipe .st { font-family: var(--mono); font-size: 10.5px; fill: var(--soft); }
+  .pipe .wire { stroke: var(--rule2); stroke-width: 1.4; stroke-dasharray: 4 4; fill: none; }
+  .pipe .ln { stroke: var(--rule2); stroke-width: 3; stroke-linecap: round; }
+  .pipe .wl { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; transform-box: fill-box; transform-origin: left center; }
+  .pipe .scan { fill: var(--accent); opacity: .16; }
+  .pipe .doc { fill: var(--card); stroke: var(--ink); stroke-width: 1.2; }
+  .pipe .oc rect { fill: var(--paper); stroke: var(--rule2); stroke-width: 1.2; }
+  .pipe .oc text { font-family: var(--mono); font-size: 11px; fill: var(--soft); }
+  .pipe .oc.pre rect { stroke: var(--accent); } .pipe .oc.pre text { fill: var(--accent); }
+  .pipe .oc.los rect { stroke: var(--gold); } .pipe .oc.los text { fill: var(--gold); }
+  .pipe .oc.une rect { stroke-dasharray: 3 3; }
+  .on .pipe .tok { animation: tok 7s var(--ease) infinite; }
+  .on .pipe .wl { animation: write 7s linear infinite; }
+  .on .pipe .wl.w2 { animation-name: write2; } .on .pipe .wl.w3 { animation-name: write3; }
+  .on .pipe .scan { animation: scan 7s linear infinite; }
+  .on .pipe .oc.pre rect { animation: lit 7s infinite; } .on .pipe .oc.los rect { animation: lit 7s infinite .5s; } .on .pipe .oc.une rect { animation: lit 7s infinite 1s; }
+  @keyframes tok { 0% { transform: translateX(0); opacity: 0; } 4% { opacity: 1; } 26% { transform: translateX(90px); } 40% { transform: translateX(90px); opacity: 1; } 56% { transform: translateX(335px); opacity: 1; } 60%, 100% { transform: translateX(335px); opacity: 0; } }
+  @keyframes write { 0%, 30% { transform: scaleX(0); } 42% { transform: scaleX(1); } 92% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+  @keyframes write2 { 0%, 38% { transform: scaleX(0); } 50% { transform: scaleX(1); } 92% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+  @keyframes write3 { 0%, 46% { transform: scaleX(0); } 55% { transform: scaleX(1); } 92% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+  @keyframes scan { 0%, 56% { transform: translateY(0); opacity: 0; } 58% { opacity: .18; } 74% { transform: translateY(58px); opacity: .18; } 76%, 100% { opacity: 0; transform: translateY(58px); } }
+  @keyframes lit { 0%, 76% { fill: var(--paper); } 80%, 94% { fill: var(--card); stroke-width: 2.2; } 100% { fill: var(--paper); } }
+
+  .you { display: grid; grid-template-columns: 1fr 1fr; }
+  .you-col { padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .you-col + .you-col { border-left: 1px solid var(--rule); }
+  .you textarea { min-height: 170px; }
+  .you .row2 { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .outs { border-top: 1px solid var(--rule); padding: 14px 16px 16px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .out { border: 1px solid var(--rule); border-radius: 10px; padding: 10px 11px; background: var(--paper); transition: border-color .3s, background-color .3s; min-width: 0; }
+  .out .on-t { font-size: 13px; font-weight: 600; line-height: 1.25; }
+  .out .res { font-family: var(--mono); font-size: 11px; margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; }
+  .out .res::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--rule2); }
+  .out.preserved { border-color: color-mix(in oklch, var(--accent) 45%, transparent); }
+  .out.preserved .res { color: var(--accent); } .out.preserved .res::before { background: var(--accent); }
+  .out.lost { border-color: color-mix(in srgb, var(--gold) 55%, transparent); background: var(--gold-t); }
+  .out.lost .res { color: var(--gold); } .out.lost .res::before { background: var(--gold); }
+  .out.unexaminable { border-style: dashed; background: transparent; }
+  .out.unexaminable .res { color: var(--soft); } .out.unexaminable .res::before { background: transparent; border: 1.5px dashed var(--soft); width: 5px; height: 5px; }
+  .out .why { font-size: 12px; color: var(--body); margin-top: 6px; line-height: 1.4; }
+  .out .why code { font-family: var(--mono); font-size: 11px; color: var(--gold); background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 0 4px; }
+  @media (max-width: 900px) { .outs { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 820px) { .you { grid-template-columns: 1fr; } .you-col + .you-col { border-left: 0; border-top: 1px solid var(--rule); } }
+  @media (max-width: 480px) { .outs { grid-template-columns: 1fr; } }
+
+  /* what comes next */
+  .nexts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 34px; }
+  .nx { border: 1px solid var(--rule); background: var(--card); border-radius: 12px; padding: 16px 18px 18px; }
+  .nx .label { display: block; margin-bottom: 8px; }
+  .nx .label b { color: var(--accent); font-weight: 500; margin-right: 6px; }
+  .nx h4 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 6px; }
+  .nx p { font-size: 14px; color: var(--body); line-height: 1.55; }
+  @media (max-width: 760px) { .nexts { grid-template-columns: 1fr; } }
+  /* review */
+  .rvw { display: grid; grid-template-columns: 1fr 1fr; }
+  .rvw-col { padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .rvw-col + .rvw-col { border-left: 1px solid var(--rule); }
+  .srcbox { font-size: 14px; line-height: 1.65; color: var(--body); background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; max-height: 300px; overflow: auto; }
+  .srcbox mark.hit-ev { color: var(--gold); font-weight: 600; background-image: linear-gradient(var(--gold), var(--gold)); background-size: 100% 1.5px; background-repeat: no-repeat; background-position: 0 100%; animation: grow .3s var(--ease) both; }
+  @keyframes grow { from { background-size: 0 1.5px; } }
+  .rvw textarea { min-height: 180px; }
+  .report { border-top: 1px solid var(--rule); display: grid; grid-template-columns: 1fr 1fr; }
+  .rep { padding: 14px 16px 16px; }
+  .rep + .rep { border-left: 1px solid var(--rule); }
+  .rep h4 { font-family: var(--mono); font-size: 11.5px; font-weight: 500; margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .rep h4 b { color: var(--accent); }
+  .drow { border: 1px solid var(--rule); border-radius: 9px; padding: 9px 11px; margin-bottom: 7px; background: var(--paper); }
+  .drow .dt { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 500; }
+  .drow .dt .v { font-family: var(--mono); font-size: 11px; font-weight: 500; }
+  .v.fail { color: var(--gold); } .v.warn { color: var(--gold); opacity: .8; } .v.clear { color: var(--accent); } .v.un { color: var(--soft); }
+  .drow.un { border-style: dashed; background: transparent; }
+  .flag { margin-top: 7px; font-size: 12.5px; color: var(--body); line-height: 1.45; }
+  .flag .c { font-family: var(--mono); font-size: 11px; color: var(--ink); }
+  .flag .evs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .flag .evs code { font-family: var(--mono); font-size: 11px; color: var(--gold); border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent); background: var(--gold-t); border-radius: 4px; padding: 0 5px; }
+  .flag .ok { font-family: var(--mono); font-size: 11px; color: var(--soft); margin-top: 4px; }
+  .clean { grid-column: 1 / -1; padding: 12px 16px; border-top: 1px dashed var(--rule); font-size: 14px; color: var(--ink); background: var(--acc-t); }
+  @media (max-width: 820px) { .rvw, .report { grid-template-columns: 1fr; } .rvw-col + .rvw-col, .rep + .rep { border-left: 0; border-top: 1px solid var(--rule); } }
+
+  footer { border-top: 1px solid var(--rule); padding-block: clamp(50px, 7vw, 86px) 50px; }
+  footer .ft { font-size: clamp(24px, 3.6vw, 38px); font-weight: 600; line-height: 1.18; letter-spacing: -0.02em; max-width: 24ch; text-wrap: balance; }
+  footer .ft .hl { color: var(--accent); }
+  footer .fl { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 26px; }
+  footer .fl a { font-family: var(--mono); font-size: 13px; text-decoration: none; padding: 9px 15px; border: 1px solid var(--ink); border-radius: 6px; transition: .15s; }
+  footer .fl a:hover { background: var(--ink); color: var(--paper); }
+  footer .colophon { margin-top: 30px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; transition-delay: 0s !important; }
+    .js .fails li { opacity: 1; transform: none; }
+    .js .reveal { opacity: 1; transform: none; }
+  }
+</style>
+<link rel="stylesheet" href="./assets/refinements.css" />
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+  <div class="top">
+    <div class="wide">
+      <a class="brand" href="#top">legible-sec</a>
+      <nav class="topnav" aria-label="Sections">
+        <a class="j" href="#problem">Problem</a>
+        <a class="j" href="#corpus">Corpus</a>
+        <a class="j" href="#rubric">Rubric</a>
+        <a class="j" href="#instruments">Instruments</a>
+        <a class="j" href="#next">Next</a>
+        <a class="back" href="../">&larr; marcelo-moreno</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ============================ hero ============================ -->
+  <header class="hero" id="top">
+    <div class="wide">
+      <h1>legible-sec</h1>
+      <p class="hero-lede">One of the hardest parts of security is explaining a finding to the people who have to act on it, and most of them are not technical. Legible studies how that second telling is done, by collecting pairs of the same thing written twice, once for the engineers and once for whoever has to decide. Out of those pairs comes a <b>rubric</b>: a written list of what a retelling has to carry over from its source and what it owes the person reading it, where every item says how it can be checked and how far that check can be trusted. <a href="#instruments">Three instruments</a> run on it. A <b>reviewer</b> that checks a draft against the finding it came from. A <b>benchmark</b> that measures how much a language model drops when it writes the summary itself. A <b>search</b> for how the field has already explained something like it.</p>
+      <div class="hero-meta">
+        <span class="tag"><i></i>ongoing research</span>
+        <span class="tag">open source · coming soon</span>
+      </div>
+      <p class="byline">A project by <a href="../">Marcelo Moreno</a> · June 2026 to now</p>
+
+      <div class="ms" id="ms" aria-label="Two passages from one report, written for two readers">
+        <div class="ms-top">
+          <span class="src">example · <a href="https://www.cisa.gov/sites/default/files/2025-03/CSRBReviewOfTheSummer2023MEOIntrusion508.pdf" target="_blank" rel="noopener">Cyber Safety Review Board, 2024</a></span>
+        </div>
+        <p class="ms-ctx">In 2023 a China-based group known as Storm-0558 broke into email accounts at the US State and Commerce Departments through Microsoft&rsquo;s cloud. The review board&rsquo;s report explains the cause twice, <b>once for engineers and once for leadership</b>.</p>
+        <div class="ms-grid">
+          <div class="ms-half">
+            <h4><b>written for engineers</b><span>section 1.2</span></h4>
+            <p>The flaw was caused by Microsoft&rsquo;s efforts to address customer requests for a common <span class="jg">OpenID Connect (OIDC) endpoint</span> service that listed <span class="k a">active signing keys</span> for both enterprise and consumer identity systems. However, Microsoft had not adequately updated the <span class="jg">software development kits (SDKs)</span>, which Microsoft and its partners both used, to differentiate between the <span class="jg">consumer MSA</span> and the <span class="jg">enterprise signing keys</span> within the common endpoint. As a result, this allowed <span class="k b">successful authentication to the <span class="jg">Entra system</span> for certain applications, such as mail, regardless of which key was used</span>.</p>
+          </div>
+          <div class="ms-half ret">
+            <h4><b>retold for leadership</b><span>executive summary</span></h4>
+            <p><span class="k a">Signing keys, used for secure authentication into remote systems, are the cryptographic equivalent of crown jewels</span> for any cloud service provider. [...] In fact, when combined with another flaw in Microsoft&rsquo;s authentication system, <span class="k b">the key permitted Storm-0558 to gain full access to essentially any Exchange Online account anywhere in the world</span>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================ problem ============================ -->
+  <section id="problem">
+    <div class="wide">
+      <div class="sec-head"><span class="n">01</span><span class="label">The problem</span></div>
+      <p class="intro reveal">Security work ends in a retelling. A finding written for engineers has to be explained again to a board, a regulator or a customer, and <span class="soft">when that retelling fails nobody notices, because the reader only ever sees the retelling.</span></p>
+
+      <div class="fails">
+        <div class="lost">
+          <h3><i></i>What can get lost</h3>
+          <ul>
+            <li><b>A number leaves</b> and the sentence closes over the gap.<span class="mx"><s>47</s> <span class="new">several</span> servers</span></li>
+            <li><b>A number survives but loses its frame.</b><span class="mx">MFA at 92% <s>against a 98% target and falling</s></span></li>
+            <li><b>The severity moves.</b> A Critical is retold like routine maintenance, or a Low is retold as urgent.<span class="mx"><s>critical</s> <span class="new">routine</span> &middot; <s>low</s> <span class="new">urgent</span></span></li>
+            <li><b>The condition that bounded the risk is dropped</b>, so a limited risk reads as unlimited.<span class="mx">exploitable <s>only with local access</s></span></li>
+            <li><b>The status drifts.</b> A weakness still open is retold as fixed, or a possible attack as one that happened.<span class="mx"><s>one remained open</s> <span class="new">corrected</span></span></li>
+            <li><b>The clock disappears</b>, what is known now and when the next update comes.<span class="mx"><s>as of 14:00, next update at 18:00</s></span></li>
+          </ul>
+        </div>
+        <div class="land">
+          <h3><i></i>What can fail to land</h3>
+          <ul>
+            <li><b>Every fact survives in the engineer&rsquo;s vocabulary</b>, so the reader cannot tell what happened.<span class="mx"><span class="hl">&ldquo;exploited a token validation issue&rdquo;</span></span></li>
+            <li><b>It never answers the reader&rsquo;s questions</b>, what is at risk, how bad it is, what they have to decide.<span class="mx"><span class="q">what is at risk?</span><span class="q">how bad?</span><span class="q">what do I decide?</span></span></li>
+            <li><b>It hedges until the reader cannot tell</b> whether they were affected.<span class="mx"><span class="hl">&ldquo;your information may have been impacted&rdquo;</span></span></li>
+            <li><b>It ends without an ask</b>, so nobody knows what happens next or who has to act.<span class="mx">next step &middot; <span class="q">none</span></span></li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="problem-note reveal"><b>The audience matters.</b> None of these is necessarily wrong. The audience decides what a retelling has to carry, so the same omission can be right for one reader and a failure for another.</p>
+
+    </div>
+  </section>
+
+  <!-- ============================ corpus ============================ -->
+  <section id="corpus">
+    <div class="wide">
+      <div class="sec-head"><span class="n">02</span><span class="label">The corpus</span></div>
+      <p class="lede reveal">Legible finds a technical finding, and the version of it written for an audience that will not read the technical text. Both halves are quoted exactly as they were published.</p>
+
+      <span class="label reveal" style="display:block;margin-top:38px">Some of the shapes a pair can take</span>
+      <div class="shapes">
+
+        <div class="shape reveal">
+          <svg viewBox="0 0 120 74" role="img" aria-label="One report. A summary near the front, the finding further in.">
+            <rect class="d" x="8" y="8" width="46" height="58" rx="4" />
+            <rect class="d" x="66" y="8" width="46" height="58" rx="4" />
+            <path class="l" d="M15,20 H45 M15,28 H41 M15,52 H47 M15,60 H38" />
+            <rect class="a" x="13" y="34" width="36" height="12" rx="3" />
+            <path class="l" d="M73,20 H105 M73,28 H99 M73,56 H103 M73,64 H94" />
+            <rect class="b" x="71" y="34" width="36" height="16" rx="3" />
+            <path class="w" d="M50,40 C58,40 60,42 70,42" />
+          </svg>
+          <h4>One document</h4>
+          <p>Both halves inside the same report: the detailed version, and the retelling written for whoever commissioned it. The most common shape.</p>
+        </div>
+
+        <div class="shape reveal">
+          <svg viewBox="0 0 120 74" role="img" aria-label="Two documents about the same event, published days apart.">
+            <rect class="d" x="8" y="16" width="44" height="46" rx="4" />
+            <path class="l" d="M15,28 H44 M15,36 H40" />
+            <rect class="a" x="13" y="44" width="34" height="12" rx="3" />
+            <rect class="d" x="68" y="16" width="44" height="46" rx="4" />
+            <path class="l" d="M75,28 H104 M75,36 H100" />
+            <rect class="b" x="73" y="44" width="34" height="12" rx="3" />
+            <path class="w" d="M52,40 H68" />
+          </svg>
+          <h4>Two documents, one event</h4>
+          <p>Two separate publications about the same incident, written for different readers and released at different times.</p>
+        </div>
+
+        <div class="shape reveal">
+          <svg viewBox="0 0 120 74" role="img" aria-label="An internal incident write-up and the email that went to customers.">
+            <rect class="d" x="8" y="10" width="44" height="54" rx="4" />
+            <path class="l" d="M15,22 H44 M15,30 H40 M15,54 H42" />
+            <rect class="a" x="13" y="38" width="34" height="12" rx="3" />
+            <rect class="d env" x="68" y="24" width="44" height="30" rx="3" />
+            <path class="w env-f" d="M68,24 L90,41 L112,24" />
+            <path class="w" d="M52,38 H68" />
+          </svg>
+          <h4>Report and message</h4>
+          <p>A written record on one side, and the message somebody sent about it on the other. A handover, an email, a note upward.</p>
+        </div>
+
+        <div class="shape reveal">
+          <svg viewBox="0 0 120 74" role="img" aria-label="A technical concept and an analogy written for it by somebody else.">
+            <rect class="d" x="8" y="22" width="44" height="32" rx="4" />
+            <path class="l" d="M15,32 H44" />
+            <rect class="a" x="13" y="40" width="34" height="8" rx="3" />
+            <circle class="b o" cx="90" cy="38" r="20" />
+            <path class="l" d="M79,34 H101 M82,44 H98" />
+            <path class="w" d="M52,38 H68" />
+          </svg>
+          <h4>Concept and analogy</h4>
+          <p>A technical concept, and the plain-language image somebody else wrote to explain it. Different authors, no shared document.</p>
+        </div>
+
+      </div>
+
+      <div class="facts reveal wide4">
+        <div class="fact"><b>3.7k+</b><span>aligned pairs so far</span></div>
+        <div class="fact"><b>2,059</b><span>source documents, 12 kinds</span></div>
+        <div class="fact"><b>179</b><span>organizations</span></div>
+        <div class="fact"><b>2011&ndash;26</b><span>report years, where the year is known</span></div>
+      </div>
+
+      <div class="subgrid">
+        <div>
+          <span class="label">Who wrote them · pairs per organization</span>
+          <div class="bars" id="orgbars">
+            <div class="bar"><span>Trail of Bits</span><span class="t"><i style="transform:scaleX(1)"></i></span><span class="c">1,237</span></div>
+            <div class="bar"><span>CISA</span><span class="t"><i style="transform:scaleX(.676)"></i></span><span class="c">836</span></div>
+            <div class="bar"><span>Cure53</span><span class="t"><i style="transform:scaleX(.297)"></i></span><span class="c">368</span></div>
+            <div class="bar"><span>GAO</span><span class="t"><i style="transform:scaleX(.16)"></i></span><span class="c">198</span></div>
+            <div class="bar"><span>OSTIF</span><span class="t"><i style="transform:scaleX(.092)"></i></span><span class="c">114</span></div>
+            <div class="bar"><span>GitHub advisories</span><span class="t"><i style="transform:scaleX(.079)"></i></span><span class="c">98</span></div>
+            <div class="bar"><span>FTC</span><span class="t"><i style="transform:scaleX(.076)"></i></span><span class="c">94</span></div>
+            <div class="bar"><span>172 others</span><span class="t"><i style="transform:scaleX(.629)"></i></span><span class="c">782</span></div>
+          </div>
+        </div>
+        <div>
+          <span class="label">What else it holds · beyond the pairs</span>
+          <div class="holds">
+            <div class="hold"><b>926</b><span>ways the field has explained a concept in plain language, gathered from public writing</span></div>
+            <div class="hold"><b>165</b><span>of those are analogies, each one kept with the concept it was written for</span></div>
+            <div class="hold"><b>15</b><span>families of source, from consultancy reports and government audits to advisories, postmortems and regulatory filings</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fieldnotes">
+        <div class="fn reveal"><span class="label">sources</span><p>All of it comes from writing already published in the open. Each pair keeps its document, link and licence.</p></div>
+        <div class="fn reveal"><span class="label">no generated text</span><p>A model was used to point at passages. The code kept a passage only if it was really in the document.</p></div>
+        <div class="fn reveal"><span class="label">contributions</span><p>The corpus is not a finished set. Once it is open, other people can add to it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ rubric ============================ -->
+  <section id="rubric">
+    <div class="wide">
+      <div class="sec-head"><span class="n">03</span><span class="label">The rubric</span></div>
+      <h2>A shared standard for the reviewer and the benchmark.</h2>
+      <p class="lede">The rubric defines what a security explanation needs to get right. It asks whether the text preserves the finding’s meaning and whether it gives its intended reader the information they need. Those are different questions, so the answers stay separate.</p>
+      <p class="rubric-origin">Its eight dimensions draw on two sources: what professionals actually wrote in the corpus, and 237 industry documents about how security should be communicated. The priorities change with the reader and the situation.</p>
+      <div class="rubric-example">
+        <p><b>Same finding. Different reader.</b>A board briefing needs the consequence, the current risk, and what needs a decision. An engineering ticket needs the affected component and a fix the engineer can verify.</p>
+        <p><b>Faithful can still be unhelpful.</b>Both texts must preserve the facts that matter. But copying the same technical detail into both does not make them equally useful. The rubric assesses each against its own reader’s needs.</p>
+      </div>
+
+      <div class="axes">
+        <div class="axis">
+          <h3><b>F</b>Fidelity</h3>
+          <p class="q">Did it keep faith with the source? Numbers, severity, scope, caveats, what is still unknown.</p>
+          <div id="axisF"></div>
+        </div>
+        <div class="never" aria-hidden="true"><span>never averaged</span></div>
+        <div class="axis">
+          <h3><b>U</b>Decision utility</h3>
+          <p class="q">Is it any use to the reader? Their questions answered, their language, something they can act on.</p>
+          <div id="axisU"></div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:6px">Select a dimension to see its checks. These describe the full instrument; the preview below covers only part of the rubric.</p>
+
+      <details class="rubric-method">
+        <summary>How the rubric can be measured</summary>
+      <div class="ladder" id="ladder">
+        <div class="rung"><span class="label"><b>L0</b>rules</span><p>Check explicit details in the text.</p><em>show the wording behind each finding</em></div>
+        <div class="rung l1"><span class="label"><b>L1</b>semantic checks</span><p>Estimate whether a claim is supported by its source.</p><em>report confidence and the passage assessed</em></div>
+        <div class="rung l2"><span class="label"><b>L2</b>model judgment</span><p>Offer an opinion on what rules cannot settle.</p><em>quotes must match the source; opinions advise</em></div>
+        <div class="rung h"><span class="label"><b>H</b>human review</span><p>Leave judgment with a person when it cannot be automated.</p><em>unexamined does not mean correct</em></div>
+      </div>
+      <p>The rubric is still being calibrated. Its eight dimensions define the intended assessment; an automated check does not reach every dimension. The reviewer and benchmark must state what they examined and what remains for a person to judge.</p>
+      </details>
+
+    </div>
+  </section>
+
+  <!-- ============================ instruments ============================ -->
+  <section id="instruments">
+    <div class="wide review-wrap">
+      <div class="sec-head"><span class="n">04</span><span class="label">The reviewer</span></div>
+      <h2>Keep the meaning. Write for the reader.</h2>
+      <p class="lede">Put a finding beside the explanation you are writing. The reviewer points out what changed, shows the source behind each concern, and helps you decide what to revise. Try the worked example, or paste your own two texts.</p>
+
+      <div class="review-preview" id="review-preview">
+        <div class="review-toolbar">
+          <div class="review-modes" aria-label="Reviewer mode">
+            <button type="button" data-mode="example" aria-pressed="true">Worked example</button>
+            <button type="button" data-mode="own" aria-pressed="false">Try your own text</button>
+          </div>
+          <span class="preview-label" id="review-label">Interactive preview · example feedback</span>
+        </div>
+        <div class="review-context">
+          <label for="review-audience">Written for</label>
+          <select id="review-audience"><option value="board">The board</option><option value="engineer">An engineer</option><option value="customer">An affected customer</option></select>
+          <button type="button" class="reset-example" id="review-reset">Reset example</button>
+        </div>
+        <div class="review-grid">
+          <div class="writing-pane">
+            <h3 id="source-label">Source finding</h3>
+            <p class="editor-hint" id="source-provenance">Illustrative finding · written for this demo</p>
+            <div class="writing-editor" id="review-source" contenteditable="plaintext-only" role="textbox" aria-multiline="true" aria-labelledby="source-label" data-placeholder="Paste the technical finding here." spellcheck="false"></div>
+          </div>
+          <div class="writing-pane">
+            <h3 id="draft-label">Your draft</h3>
+            <p class="editor-hint">Edit the explanation. Follow the evidence.</p>
+            <div class="writing-editor" id="review-draft" contenteditable="plaintext-only" role="textbox" aria-multiline="true" aria-labelledby="draft-label" data-placeholder="Paste or write your explanation here." spellcheck="false"></div>
+          </div>
+          <aside class="suggestion-pane" aria-labelledby="feedback-label">
+            <h3 id="feedback-label">Review</h3>
+            <div class="review-counts" id="review-counts" aria-live="polite"></div>
+            <div id="review-feedback"></div>
+          </aside>
+        </div>
+        <p class="review-feedback-status" id="review-status" role="status"></p>
+        <div class="review-footer">
+          <p><b>About this preview.</b> The worked example uses prepared recommendations to show the intended experience. With your own text, eight browser checks run as you type. No text is sent to a model.</p>
+          <p><b>What still needs a person.</b> The browser checks do not judge whether the reader has enough context or a useful next action. No detected issue is not an approval. <a href="#rubric">See the rubric.</a></p>
+        </div>
+        <noscript><p class="review-empty">Enable JavaScript to use the interactive reviewer preview.</p></noscript>
+      </div>
+    </div>
+
+    <div class="wide benchmark-wrap" id="benchmark">
+      <div class="sec-head"><span class="n">05</span><span class="label">The benchmark</span></div>
+      <h2>Lost in Translation?</h2>
+      <p class="lede">How well do language models preserve a security finding when they explain it to someone else? Each model receives the same finding and the same intended reader. The briefing it writes is then assessed against the <a href="#rubric">Legible rubric</a>.</p>
+      <figure class="paper-figure">
+        <p class="figure-kicker">STUDY DESIGN · BENCHMARKING LLM FIDELITY IN EXECUTIVE SECURITY BRIEFS</p>
+<svg class="paper-diagram paper-diagram-desktop" viewBox="0 0 980 470" role="group" aria-labelledby="benchmark-figure-title benchmark-figure-desc">
+<title id="benchmark-figure-title">A shared finding, separate briefings, one rubric</title>
+<desc id="benchmark-figure-desc">A real finding and a named reader are given to each of three illustrative model families: OpenAI, Claude, and Gemini. Each writes a separate briefing. All briefings, together with the original finding and reader context, are assessed against the Legible rubric. Fidelity and decision utility remain separate.</desc><defs>
+      <marker id="bf-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L6,3.5 L0,7" fill="none" stroke="currentColor" stroke-width="1" /></marker>
+      <g id="bf-brief"><path class="paper" d="M0,0 H68 L86,18 V100 H0 Z"/><path class="paper" d="M68,0 V18 H86"/><path class="document-line" d="M14,35 H64 M14,49 H71 M14,63 H59 M14,77 H67"/><path class="document-line document-accent" d="M14,49 H50"/></g>
+      <g id="bf-reader" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="0" cy="0" r="9"/><path d="M-17,30 V24 C-17,10 17,10 17,24 V30 M-22,32 H22"/></g>
+    </defs>
+<text class="figure-step" x="30" y="20">01 / SAME FINDING &amp; READER</text>
+<text class="figure-step" x="343" y="20">02 / EACH MODEL WRITES</text>
+<text class="figure-step" x="757" y="20">03 / ASSESSMENT</text>
+<use href="#bf-brief" x="60" y="106" transform="translate(-12,-21) scale(1.2)"/>
+<text class="figure-heading" x="30" y="245">A real finding</text><text class="figure-small" x="30" y="267">from the corpus</text>
+<use href="#bf-reader" x="62" y="310"/>
+<text class="figure-heading" x="96" y="322">For the board</text><text class="figure-small" x="96" y="345">one named reader</text>
+<path class="connector" d="M166,178 H250 M225,326 H250 M250,100 V340 M250,100 H354 M250,220 H354 M250,340 H354" marker-end="url(#bf-arrow)"/>
+<path class="connector" d="M250,100 H354 M250,220 H354" marker-end="url(#bf-arrow)"/>
+<g role="img" aria-label="OpenAI model family, illustrative"><title>OpenAI · illustrative model family</title><image href="./assets/openai.svg" x="371" y="75" width="50" height="50"/></g>
+<path class="connector" d="M440,100 H508" marker-end="url(#bf-arrow)"/>
+<use href="#bf-brief" x="526" y="52"/>
+<path class="connector" d="M628,100 H688"/>
+<g role="img" aria-label="Claude model family, illustrative"><title>Claude · illustrative model family</title><image href="./assets/claude.svg" x="371" y="195" width="50" height="50"/></g>
+<path class="connector" d="M440,220 H508" marker-end="url(#bf-arrow)"/>
+<use href="#bf-brief" x="526" y="172"/>
+<path class="connector" d="M628,220 H688"/>
+<g role="img" aria-label="Gemini model family, illustrative"><title>Gemini · illustrative model family</title><image href="./assets/gemini.svg" x="371" y="315" width="50" height="50"/></g>
+<path class="connector" d="M440,340 H508" marker-end="url(#bf-arrow)"/>
+<use href="#bf-brief" x="526" y="292"/>
+<path class="connector" d="M628,340 H688"/>
+<text class="figure-small" x="526" y="410">Their briefings</text>
+<path class="connector" d="M688,100 V340 M688,220 H742" marker-end="url(#bf-arrow)"/>
+<a href="#rubric" aria-label="Read the Legible rubric"><rect class="rubric-outline" x="756" y="144" width="200" height="183" rx="5"/>
+<text class="figure-heading" x="774" y="175">Legible rubric</text><text class="figure-small" x="774" y="197">8 dimensions</text>
+<path class="connector" d="M774,212 H938" opacity=".3"/>
+<text class="axis-label" x="774" y="242">Fidelity</text><text class="axis-label" x="774" y="272">Decision utility</text>
+<text class="figure-mono" x="774" y="305">Read the rubric ↗</text></a>
+<path class="reference-connector" d="M30,282 V447 H855 V336" marker-end="url(#bf-arrow)"/>
+<rect x="321" y="433" width="338" height="26" fill="var(--paper)"/>
+<text class="figure-small" x="490" y="451" text-anchor="middle">assessed against the source and reader</text>
+</svg><svg class="paper-diagram paper-diagram-mobile" viewBox="0 0 360 730" role="group" aria-labelledby="benchmark-mobile-title">
+<title id="benchmark-mobile-title">A finding and reader go to OpenAI, Claude, and Gemini models. Separate briefings are assessed against the source and reader using the Legible rubric.</title><defs>
+      <marker id="bm-arrow" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L6,3.5 L0,7" fill="none" stroke="currentColor" stroke-width="1" /></marker>
+      <g id="bm-brief"><path class="paper" d="M0,0 H68 L86,18 V100 H0 Z"/><path class="paper" d="M68,0 V18 H86"/><path class="document-line" d="M14,35 H64 M14,49 H71 M14,63 H59 M14,77 H67"/><path class="document-line document-accent" d="M14,49 H50"/></g>
+      <g id="bm-reader" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="0" cy="0" r="9"/><path d="M-17,30 V24 C-17,10 17,10 17,24 V30 M-22,32 H22"/></g>
+    </defs>
+<text class="figure-step" x="12" y="20">01 / SAME FINDING &amp; READER</text>
+<use href="#bm-brief" x="26" y="46"/><use href="#bm-reader" x="223" y="70"/>
+<text class="figure-heading" x="180" y="132">For the board</text>
+<text class="figure-small" x="26" y="167">A real finding</text><text class="figure-small" x="180" y="154">one named reader</text>
+<path class="connector" d="M69,177 V215 H290 V252 M69,215 H60 V252 M223,172 V215 H175 V252" marker-end="url(#bm-arrow)"/>
+<path class="connector" d="M60,234 V252 M175,234 V252" marker-end="url(#bm-arrow)"/>
+<text class="figure-step" x="12" y="200">02 / EACH MODEL WRITES</text>
+<g role="img" aria-label="OpenAI model family, illustrative"><title>OpenAI</title><image href="./assets/openai.svg" x="37" y="270" width="46" height="46"/></g><path class="connector" d="M60,330 V359" marker-end="url(#bm-arrow)"/><use href="#bm-brief" x="17" y="376"/>
+<path class="connector" d="M60,489 V514 H175"/><g role="img" aria-label="Claude model family, illustrative"><title>Claude</title><image href="./assets/claude.svg" x="152" y="270" width="46" height="46"/></g><path class="connector" d="M175,330 V359" marker-end="url(#bm-arrow)"/><use href="#bm-brief" x="132" y="376"/>
+<path class="connector" d="M175,489 V514 H175"/><g role="img" aria-label="Gemini model family, illustrative"><title>Gemini</title><image href="./assets/gemini.svg" x="267" y="270" width="46" height="46"/></g><path class="connector" d="M290,330 V359" marker-end="url(#bm-arrow)"/><use href="#bm-brief" x="247" y="376"/>
+<path class="connector" d="M290,489 V514 H175"/><text class="figure-small" x="175" y="500" text-anchor="middle">Their briefings</text>
+<path class="connector" d="M175,514 V552" marker-end="url(#bm-arrow)"/>
+<text class="figure-step" x="12" y="546">03 / ASSESSMENT</text>
+<a href="#rubric" aria-label="Read the Legible rubric"><rect class="rubric-outline" x="58" y="567" width="237" height="115" rx="5"/><text class="figure-heading" x="77" y="595">Legible rubric</text><text class="figure-small" x="77" y="617">8 dimensions · read the rubric ↗</text><text class="axis-label" x="77" y="648">Fidelity</text><text class="axis-label" x="157" y="648">Decision utility</text></a>
+<path class="reference-connector" d="M12,177 V704 H320 V625 H302" marker-end="url(#bm-arrow)"/>
+<rect x="34" y="694" width="271" height="24" fill="var(--paper)"/><text class="figure-small" x="175" y="710" text-anchor="middle">against the source and reader</text>
+</svg>
+        <figcaption><b>Figure 1.</b> A shared finding, separate briefings, one rubric. The source and the intended reader remain part of the assessment. Fidelity and decision utility are reported separately. Logos illustrate model families; they do not indicate completed runs or a finalized model selection.</figcaption>
+      </figure>
+      <div class="benchmark-status"><span class="status-label">DESIGNED · NOT YET RUN</span><p>The rubric defines what to assess. The research is determining how reliably each part can be measured. Results will identify the checks used, their measured ability to catch errors, and what still requires judgment.</p></div>
+    </div>
+
+    <div class="wide" style="margin-top: clamp(80px, 11vw, 130px)">
+      <div class="sec-head"><span class="n">06</span><span class="label">Retrieval</span></div>
+      <h2 class="reveal">See how others already explained it.</h2>
+      <p class="lede reveal">Paste a finding and get back real pairs from the corpus: findings like yours, and the summaries professionals actually wrote from them. Ask for a concept instead and it returns the definitions, plain-language explanations and analogies the field has already used for it. It is precedent, not a set of approved answers, and every result shows exactly what matched and where it came from.</p>
+
+      <div class="demo reveal" id="retrieval">
+        <div class="demo-top"><span class="dots"><i></i><i></i><i></i></span><span class="ttl">retrieval · a sample of 12 pairs</span></div>
+        <div class="rv">
+          <div class="rv-in">
+            <label class="label" for="rq">paste a finding</label>
+            <textarea id="rq" rows="3" spellcheck="false">The affected application uses a hard-coded password which could allow an attacker to remotely execute code. CVSS 9.8.</textarea>
+            <div class="pills" id="rchips" aria-label="Try an example query"></div>
+          </div>
+          <div class="rv-out" id="rout" aria-live="polite"></div>
+        </div>
+        <div class="demo-foot"><p class="note">A sample of 12 public pairs. The full library searches every shareable pair in the corpus, ranking exact identifiers first and then shared terms.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ next ============================ -->
+  <section id="next">
+    <div class="wide">
+      <div class="sec-head"><span class="n">07</span><span class="label">What comes next</span></div>
+      <h2 class="reveal">Ongoing research, open source soon.</h2>
+      <p class="lede reveal">Legible is still being built. When it is ready, the corpus, the rubric and the three instruments will be released as an open-source project, so any security team can check its retellings, test the models it relies on, and learn from how the field already writes.</p>
+      <div class="nexts">
+        <div class="nx reveal"><span class="label"><b>01</b>corpus</span><h4>More and better pairs</h4><p>A larger corpus from more kinds of source, every pair traceable to the document it came from and shared under its own license.</p></div>
+        <div class="nx reveal"><span class="label"><b>02</b>rubric</span><h4>A calibrated rubric</h4><p>Weights checked by hand against real pairs, so what fails a text is grounded in how the field actually writes.</p></div>
+        <div class="nx reveal"><span class="label"><b>03</b>instruments</span><h4>Tools you can run</h4><p>The reviewer, the benchmark and the search, open and running in your browser or on your own machine, so findings never have to leave it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wide">
+      <p class="ft">A finding only matters once the right person <span class="hl">understands it</span>.</p>
+      <div class="fl"><a href="../">&larr; back to marcelo-moreno</a><a href="../#research">see my research</a></div>
+      <p class="note colophon">Legible · Marcelo Moreno · 2026. Sample texts are US government works in the public domain and GitHub advisories under CC BY 4.0, quoted with attribution.</p>
+    </div>
+  </footer>
+
+<script>/* The eight cross-text checks of the LEGIBLE deterministic gate, ported
+   line for line from presentation/web/src/lib/judge.ts (itself a 1:1 port
+   of src/legible/judge.py). Contract kept: a check may only fail by showing
+   the exact strings that made it fail. The three genre checks are not here. */
+var LegibleJudge = (function () {
+  var ID_PATTERNS = [
+    /\bCVE-\d{4}-\d{4,7}\b/gi,
+    /\bCWE-\d{1,4}\b/gi,
+    /\bGHSA-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}\b/gi,
+    /\bICSA-\d{2}-\d{3}-\d{2}\b/gi,
+    /\b(?:TOB|DYL|PBL|NCC|KL|OSTIF)-[A-Z0-9]{2,12}-\d{1,4}\b/g
+  ];
+  function all(rx, text) { return Array.from(text.matchAll(new RegExp(rx.source, rx.flags.indexOf("g") >= 0 ? rx.flags : rx.flags + "g"))); }
+  function extractIds(text) {
+    var out = new Set();
+    ID_PATTERNS.forEach(function (rx) { all(rx, text).forEach(function (m) { out.add(m[0].toUpperCase()); }); });
+    return out;
+  }
+  function checkIdParity(source, translation) {
+    var src = extractIds(source); if (!src.size) return [];
+    var tr = extractIds(translation);
+    var missing = Array.from(src).filter(function (i) { return !tr.has(i); }).sort();
+    return missing.length ? [{ check: "id_parity", level: "fail", message: "identifier(s) in the source neither kept nor declared omitted", evidence: missing }] : [];
+  }
+
+  var NUM_RX = /(?<![\w.-])(\$?\d{1,3}(?:,\d{3})+(?:\.\d+)?|\$?\d+\.\d+|\$\d+|\d+(?:\.\d+)?\s?%|\d{4,6}|\b\d+\b)/g;
+  var YEAR_RX = /^(19|20)\d{2}$/;
+  var IP_RX = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
+  var VERSION_RX = /\bv?\d+\.\d+(?:\.\d+){1,3}\b/g;
+  var DOMAIN_RX = /\b[a-z0-9][a-z0-9-]{1,62}(?:\.[a-z0-9][a-z0-9-]{1,62})+\.(?:com|net|org|io|gov|edu|dev|co|us|uk|de|cloud)\b/gi;
+  var PORT_RX = /\bport\s+(\d{2,5})\b/gi;
+
+  function idSpans(text) {
+    var spans = [];
+    ID_PATTERNS.concat([VERSION_RX, IP_RX]).forEach(function (rx) { all(rx, text).forEach(function (m) { spans.push([m.index, m.index + m[0].length]); }); });
+    return spans;
+  }
+  function extractNumbers(text, ignore) {
+    var out = new Map();
+    all(NUM_RX, text).forEach(function (m) {
+      var start = m.index;
+      if (ignore.some(function (s) { return s[0] <= start && start < s[1]; })) return;
+      var tok = m[0];
+      var norm = tok.replace(/,/g, "").replace(/\s/g, "").replace(/^\$/, "").replace(/%$/, "");
+      if (YEAR_RX.test(tok) || norm === "1" || norm === "2") return;
+      if (!out.has(norm)) out.set(norm, tok);
+    });
+    return out;
+  }
+  function checkNumericParity(source, translation) {
+    var src = extractNumbers(source, idSpans(source)); if (!src.size) return [];
+    var kept = extractNumbers(translation, idSpans(translation));
+    var missing = Array.from(src.keys()).filter(function (n) { return !kept.has(n) && translation.indexOf(n) < 0; }).sort(function (a, b) { return parseFloat(a) - parseFloat(b); });
+    return missing.length ? [{ check: "numeric_parity", level: "fail", message: "number(s) in the source neither kept nor declared omitted", evidence: missing.map(function (n) { return src.get(n); }) }] : [];
+  }
+
+  var SEVERITY_BANDS = [
+    [/\bcritical\b/gi, 4],
+    [/\bhigh(?:[-\s]severity| risk| impact)?\b/gi, 3],
+    [/\b(?:actively exploited|exploit\w*\s+in the wild|exploitation observed)\b/gi, 4],
+    [/\bmedium\b|\bmoderate\b/gi, 2],
+    [/\blow(?:[-\s]severity| risk)?\b/gi, 1],
+    [/\binformational\b|\binfo\b/gi, 0]
+  ];
+  var CVSS_RX = /\bCVSS(?:\s*v?\d(?:\.\d)?)?\s*(?:base\s*)?(?:score\s*)?(?:of\s*)?[:\s]\s*(\d{1,2}(?:\.\d)?)/gi;
+  var NEGATORS = /\b(?:no evidence|no indication|no sign|not been|have not|has not|was not|were not|without any|not observed|not aware|not exploit)\b/i;
+  function negated(text, start) {
+    var s = Math.max(text.lastIndexOf(".", start - 1), text.lastIndexOf("\n", start - 1)) + 1;
+    return NEGATORS.test(text.slice(s, start));
+  }
+  function severitySignal(text) {
+    var best = null;
+    SEVERITY_BANDS.forEach(function (b) {
+      var ms = all(b[0], text);
+      for (var i = 0; i < ms.length; i++) {
+        if (negated(text, ms[i].index)) continue;
+        if (best === null || b[1] > best[0]) best = [b[1], ms[i][0]];
+        break;
+      }
+    });
+    all(CVSS_RX, text).forEach(function (m) {
+      var score = parseFloat(m[1]);
+      var band = score >= 9 ? 4 : score >= 7 ? 3 : score >= 4 ? 2 : 1;
+      if (best === null || band > best[0]) best = [band, m[0]];
+    });
+    return best;
+  }
+  function checkSeverityDrift(source, translation) {
+    var src = severitySignal(source); if (src === null) return [];
+    var tr = severitySignal(translation);
+    if (tr !== null && tr[0] < src[0]) return [{ check: "severity_drift", level: "fail", message: "translation's strongest severity signal is below the source's", evidence: ["source: " + src[1], "translation: " + tr[1]] }];
+    if (tr === null) return [{ check: "severity_drift", level: "warn", message: "source carries a severity signal but the translation names none", evidence: ["source: " + src[1]] }];
+    return [];
+  }
+
+  function techEntities(text) {
+    var out = new Set();
+    [IP_RX, VERSION_RX, DOMAIN_RX].forEach(function (rx) { all(rx, text).forEach(function (m) { out.add(m[0].toLowerCase()); }); });
+    all(PORT_RX, text).forEach(function (m) { out.add("port " + m[1]); });
+    return out;
+  }
+  function checkEntities(source, translation) {
+    var src = techEntities(source), tr = techEntities(translation), flags = [];
+    var invented = Array.from(tr).filter(function (e) { return !src.has(e); }).sort();
+    if (invented.length) flags.push({ check: "entity_check", level: "fail", message: "technical entity in the translation does not appear in the source (possible invention)", evidence: invented });
+    var dropped = Array.from(src).filter(function (e) { return !tr.has(e); }).sort();
+    if (dropped.length) flags.push({ check: "entity_check", level: "warn", message: "technical entity dropped without declaration (may be justified for this audience)", evidence: dropped });
+    return flags;
+  }
+
+  var CAVEAT_MARKERS = ["requires authenticat", "requires local access", "requires physical access", "requires user interaction", "only if", "only when", "in certain configurations", "under certain conditions", "no evidence of exploitation", "no evidence that", "not exploitable", "did not observe", "we did not find", "theoretical", "difficult to exploit", "mitigated by", "already patched", "requires admin", "requires elevated", "low likelihood", "unlikely to", "provided that", "as long as", "if an attacker", "would require"];
+  var WORD_RX = /[a-z0-9']+/g;
+  var STOP = new Set(["the", "a", "an", "of", "to", "and", "in", "is", "that", "this", "for", "on", "be", "by", "it", "as", "with"]);
+  function splitSentences(text) { return text.split(/(?<=[.!?])\s+|\n+/).map(function (s) { return s.trim(); }).filter(Boolean); }
+  function tokenOverlap(a, b) {
+    var ta = new Set((a.toLowerCase().match(WORD_RX) || []).filter(function (w) { return !STOP.has(w); }));
+    var tb = new Set((b.toLowerCase().match(WORD_RX) || []).filter(function (w) { return !STOP.has(w); }));
+    if (!ta.size || !tb.size) return 0;
+    var inter = 0; ta.forEach(function (w) { if (tb.has(w)) inter++; });
+    return inter / ta.size;
+  }
+  function markerClause(sentence, marker) {
+    var parts = sentence.split(/[,;]| and /);
+    for (var i = 0; i < parts.length; i++) if (parts[i].toLowerCase().indexOf(marker) >= 0) return parts[i].trim();
+    return sentence;
+  }
+  function checkCaveats(source, translation) {
+    var flags = [], tr = splitSentences(translation);
+    splitSentences(source).forEach(function (sent) {
+      var low = sent.toLowerCase();
+      var marker = CAVEAT_MARKERS.find(function (m) { return low.indexOf(m) >= 0; });
+      if (!marker) return;
+      var clause = markerClause(sent, marker);
+      var best = tr.reduce(function (acc, t) { return Math.max(acc, tokenOverlap(clause, t)); }, 0);
+      if (best < 0.35) flags.push({ check: "caveat_parity", level: "fail", message: "caveat/condition in the source has no counterpart in the translation and was not declared omitted", evidence: [clause] });
+    });
+    return flags;
+  }
+
+  var ACTION = "allow\\w*|enabl\\w*|permit\\w*|grant\\w*|expos\\w*|leak\\w*|caus\\w*|lead\\w*|result\\w*|access\\w*|read\\w*|writ\\w*|execut\\w*|compromis\\w*|bypass\\w*|escalat\\w*|steal|stole|stolen|disclos\\w*|overwrit\\w*|drain\\w*|delet\\w*|modif\\w*|tamper\\w*|impersonat\\w*|spoof\\w*|forg\\w*|hijack\\w*|poison\\w*|inject\\w*|deface\\w*|encrypt\\w*|exfiltrat\\w*|takeover|take\\s+over|elevat\\w*|manipulat\\w*|corrupt\\w*|redirect\\w*";
+  var HEDGE = /\b(?:could|may|might|can|would|potential\w*|possibl\w*|if\s+exploited|under\s+certain|in\s+theory|theoretically|is\s+able\s+to|be\s+able\s+to)\b/i;
+  var ASSERT_ACTION = new RegExp("\\b(?:" + ACTION + ")\\b", "i");
+  function checkClaimInflation(source, translation) {
+    if (!(HEDGE.test(source) && ASSERT_ACTION.test(source))) return [];
+    if (HEDGE.test(translation)) return [];
+    var m = ASSERT_ACTION.exec(translation); if (!m) return [];
+    var clause = translation.slice(Math.max(0, m.index - 24), m.index + m[0].length + 16);
+    return [{ check: "claim_inflation", level: "fail", message: "source hedges the impact but the translation asserts it as fact", evidence: ["source hedge: " + HEDGE.exec(source)[0], "translation: " + clause.trim()] }];
+  }
+
+  var STATUS = {
+    exploited_actual: /\b(?:was|were|has been|have been|is being|are being)\s+exploit\w*|attackers?\s+(?:accessed|stole|exfiltrat\w*|compromis\w*|drained|encrypted)|breach\s+occurred|\b\w+\s+(?:was|were|have been|has been)\s+(?:stolen|exfiltrat\w*|breached|compromised|encrypted|leaked)|(?:already|successfully)\s+(?:stolen|exploited|breached|compromised|accessed)/i,
+    exploited_potential: /\b(?:could|may|might|can)\s+(?:be\s+)?exploit\w*|an?\s+attacker\s+could|potential\w*\s+(?:for\s+)?exploit\w*|if\s+exploited/i,
+    remediated: /\b(?:has been|was|is|are|were)\s+(?:fixed|patched|remediat\w*|resolved|addressed|mitigat\w*)|no longer\s+vulnerable/i,
+    active: /\b(?:is|are|remains?|still)\s+vulnerable|unpatched|unremediat\w*|not\s+(?:yet\s+)?(?:fixed|patched|remediat\w*)/i
+  };
+  function status(text, key) { var m = STATUS[key].exec(text); return m && !negated(text, m.index) ? m[0] : null; }
+  function checkStatusDrift(source, translation) {
+    var flags = [];
+    if (status(translation, "exploited_actual") && !status(source, "exploited_actual") && (status(source, "exploited_potential") || ASSERT_ACTION.test(source)))
+      flags.push({ check: "status_drift", level: "fail", message: "translation implies exploitation occurred; source only describes the potential", evidence: ["translation: " + status(translation, "exploited_actual")] });
+    if (status(source, "remediated") && status(translation, "active"))
+      flags.push({ check: "status_drift", level: "fail", message: "source states the issue was remediated; translation implies it is still active", evidence: ["source: " + status(source, "remediated"), "translation: " + status(translation, "active")] });
+    if (status(source, "active") && status(translation, "remediated"))
+      flags.push({ check: "status_drift", level: "warn", message: "translation implies remediation the source does not state", evidence: ["translation: " + status(translation, "remediated")] });
+    return flags;
+  }
+  function checkNegationFlip(source, translation) {
+    var neg = /\bno\s+(?:evidence|indication|sign)\s+of\s+(?:exploit\w*|compromis\w*|access|breach)/i.test(source);
+    if (neg && status(translation, "exploited_actual")) return [{ check: "negation_flip", level: "fail", message: "source explicitly reports no evidence of exploitation; translation asserts it occurred", evidence: ["translation: " + status(translation, "exploited_actual")] }];
+    return [];
+  }
+
+  var CHECKS = ["id_parity", "numeric_parity", "entity_check", "severity_drift", "claim_inflation", "caveat_parity", "status_drift", "negation_flip"];
+  var DIM = { id_parity: "D2", numeric_parity: "D2", entity_check: "D2", severity_drift: "D3", claim_inflation: "D3", caveat_parity: "D4", status_drift: "D4", negation_flip: "D4" };
+  function run(source, translation) {
+    var flags = [].concat(
+      checkIdParity(source, translation), checkNumericParity(source, translation), checkEntities(source, translation),
+      checkSeverityDrift(source, translation), checkClaimInflation(source, translation), checkCaveats(source, translation),
+      checkStatusDrift(source, translation), checkNegationFlip(source, translation));
+    return { flags: flags, checks: CHECKS, dim: DIM };
+  }
+  function hasCaveat(text) { var low = text.toLowerCase(); return CAVEAT_MARKERS.some(function (m) { return low.indexOf(m) >= 0; }); }
+  return { run: run, CHECKS: CHECKS, DIM: DIM, severitySignal: severitySignal, hasCaveat: hasCaveat };
+})();
+if (typeof module !== "undefined") module.exports = LegibleJudge;
+</script>
+<script>
+var PAIRS = [{"id":"board_oig_4.jsonl#9","org":"Smithsonian Institution (OIG)","type":"oig_audit","year":2017,"sev":null,"license":"public-domain-us-gov","url":"https://www.oversight.gov/sites/default/files/documents/reports/2017-09/OIG_A_17_05.pdf","cves":[],"tech":"For websites, OIG analysis showed that 68 percent (411 of 607) of high severity vulnerabilities were not resolved within 2 weeks, as required. For information systems that support websites, such as web servers and database servers, OIG analysis showed that 9,904 high and medium severity vulnerabilities were not resolved within 30 days, and an additional 540 low severity vulnerabilities were not …","exec":"Specifically, Smithsonian websites were at increased risk of unauthorized access due to unresolved security vulnerabilities. In November 2016, OIG found that information technology security staff had identified 10,855 high, medium, and low vulnerabilities in websites and supporting information …","techFull":"For websites, OIG analysis showed that 68 percent (411 of 607) of high severity vulnerabilities were not resolved within 2 weeks, as required. For information systems that support websites, such as web servers and database servers, OIG analysis showed that 9,904 high and medium severity vulnerabilities were not resolved within 30 days, and an additional 540 low severity vulnerabilities were not resolved within 90 days as required. Moreover, 7,550 (76 percent) of those high and medium severity vulnerabilities were more than 90 days old.","execFull":"Specifically, Smithsonian websites were at increased risk of unauthorized access due to unresolved security vulnerabilities. In November 2016, OIG found that information technology security staff had identified 10,855 high, medium, and low vulnerabilities in websites and supporting information systems that system administrators had not resolved within the required time frames."},{"id":"CSRB-1065db798a","org":"CSRB","type":"csrb_report","year":2021,"sev":null,"license":"public-domain-us-gov","url":"https://www.cisa.gov/sites/default/files/publications/CSRB-Report-on-Log4-July-11-2022_508.pdf","cves":["CVE-2021-44228"],"tech":"Analysts at the National Institute of Standards and Technology (NIST) National Vulnerability Database (NVD) assessed CVE-2021-44228 as a critical vulnerability with a Common Vulnerability Scoring System (CVSS) Base Score of 10.0, the highest score possible. This reflected the fact that exploitation of the flaw required low attack complexity, no privilege requirements, and no user interaction.","exec":"the Log4j vulnerability is easy for attackers to exploit and affords a high degree of system control to an attacker once exploited.","techFull":null,"execFull":null},{"id":"CSRB-d3d17bbc3c","org":"CSRB","type":"csrb_report","year":2023,"sev":null,"license":"public-domain-us-gov","url":"https://www.cisa.gov/sites/default/files/2023-08/CSRB_Lapsus%24_508c.pdf","cves":[],"tech":"Threat actors can abuse this business process to fraudulently activate an attacker-controlled SIM with the victim’s phone number. This enables the threat actor to intercept SMS and voice calls and receive MFA-related messages that control access to online accounts.","exec":"In several instances, attackers gained initial access to targeted organizations through Subscriber Identity Module (SIM) swapping attacks, which allowed them to intercept one-time passcodes and push notifications sent via SMS, effectively defeating this widely used MFA control.","techFull":null,"execFull":null},{"id":"CSRB-8ba4cb3e4b","org":"CSRB","type":"csrb_report","year":2023,"sev":null,"license":"public-domain-us-gov","url":"https://www.cisa.gov/sites/default/files/2025-03/CSRBReviewOfTheSummer2023MEOIntrusion508.pdf","cves":[],"tech":"Initially, the consumer MSA system had no process for automated signing key rotation or deactivation and utilized a manual process instead. Over time, Microsoft automated the key rotation process in the enterprise system with the intent for the consumer MSA system to follow and use the same technology, but it had not done so in the consumer MSA system before the intrusion. Microsoft continued to …","exec":"If Microsoft had not paused manual rotation of keys; if it had completed the migration of its MSA environment to rotate keys automatically; if it had put in place a technical or other control to generate alerts for aging keys, the 2016 MSA key would not have been valid in 2023.","techFull":null,"execFull":null},{"id":"OIG-b77cf42079","org":"U.S. Department of Commerce (OIG)","type":"oig_audit","year":null,"sev":null,"license":"public-domain-us-gov","url":"https://www.oig.doc.gov/wp-content/OIGPublications/OIG-23-030-A_HVA_vulnerabilities_final_report_SECURED.pdf","cves":[],"tech":"Across the 17 systems, a total of 88 vulnerabilities were overdue for remediation. We reviewed remediation evidence for the 88 vulnerabilities and noted that 58 were overdue by an average of 174 days (see table 2 for a breakdown).","exec":"I. HVAs are operating with significant risk due to unresolved vulnerabilities. The Department conducts penetration tests as required, but does not remediate issues according to risk-based timelines. As a result, the Department’s HVAs are operating with known exploited vulnerabilities for prolonged …","techFull":null,"execFull":null},{"id":"OIG-b933fe3684","org":"U.S. Department of Homeland Security (OIG)","type":"oig_audit","year":2024,"sev":null,"license":"public-domain-us-gov","url":"https://www.oig.dhs.gov/sites/default/files/assets/2024-09/OIG-24-62-Sep24.pdf","cves":[],"tech":"Despite HSIN being DHS’ primary system for sharing information with partners, more than half of the HSIN account holders did not regularly use the platform. According to Office of the CIO data, between March 22 to September 15, 2023, there were 55,609 active HSIN account holders; of these, 29,427 (53 percent) did not log into HSIN within approximately 6 months,","exec":"According to the Office of the Chief Information Officer’s data, more than half of the 55,609 active HSIN account holders did not log into HSIN between March 22 and September 15, 2023.","techFull":"Despite HSIN being DHS’ primary system for sharing information with partners, more than half of the HSIN account holders did not regularly use the platform. According to Office of the CIO data, between March 22 to September 15, 2023, there were 55,609 active HSIN account holders; of these, 29,427 (53 percent) did not log into HSIN within approximately 6 months,","execFull":"According to the Office of the Chief Information Officer’s data, more than half of the 55,609 active HSIN account holders did not log into HSIN between March 22 and September 15, 2023."},{"id":"GAO-7888e895f9","org":"GAO","type":"gao_report","year":null,"sev":null,"license":"public-domain-us-gov","url":"https://www.gao.gov/assets/gao-20-241.pdf","cves":[],"tech":"Six of the 16 components did not collect information on the number of users that did not complete the cyber awareness training. In particular, the Navy, Air Force, Marine Corps, U.S. European Command, and the Defense Media Activity did not collect information on the users who did not complete the training in fiscal year 2018.","exec":"review of 16 selected components identified six without information on system users that had not completed the required training, and eight without information on users whose network access had been revoked for not completing training.","techFull":null,"execFull":null},{"id":"GHSA-jfh8-c2jp-5v3q","org":"GHSA","type":"ghsa_advisory","year":2021,"sev":"Critical","license":"cc-by-4.0","url":"https://github.com/advisories/GHSA-jfh8-c2jp-5v3q","cves":[],"tech":"Log4j versions prior to 2.16.0 are subject to a remote code execution vulnerability via the ldap JNDI parser. As per Apache's Log4j security guide: Apache Log4j2 \u003c=2.14.1 JNDI features used in configuration, log messages, and parameters do not protect against attacker controlled LDAP and other JNDI related endpoints. An attacker who can control log messages or log message parameters can execute …","exec":"Logging untrusted or user controlled data with a vulnerable version of Log4J may result in Remote Code Execution (RCE) against your application. This includes untrusted data included in logged errors such as exception traces, authentication failures, and other unexpected vectors of user controlled …","techFull":null,"execFull":null},{"id":"GHSA-c623-f998-8hhv","org":"GHSA","type":"ghsa_advisory","year":2025,"sev":"High","license":"cc-by-4.0","url":"https://github.com/advisories/GHSA-c623-f998-8hhv","cves":[],"tech":"The vulnerability is located in /sip/response.go at line 242 in the NewResponseFromRequest function: [code omitted] Root Cause: 1. Missing To Header: When any SIP request is sent without a To header, the SIP message parsing succeeds but the To header is never set in the request object. 2. Header Copying Logic: During response creation in NewResponseFromRequest, the code attempts to copy headers …","exec":"This vulnerability affects all SIP applications using the sipgo library when using NewResponseFromRequest to generate SIP responses. Attack Impact: Availability: Complete denial of service - application crashes immediately Remote Exploitation: Yes Authentication Required: No - vulnerability …","techFull":null,"execFull":null},{"id":"icsa-24-184-02#doc","org":"CISA","type":"cisa_ics_advisory","year":null,"sev":null,"license":"public-domain-us-gov","url":null,"cves":["CVE-2024-4708"],"tech":"The following mySCADA products are affected: myPRO: Versions prior to 8.31.0 The affected application uses a hard-coded password which could allow an attacker to remotely execute code on the affected device. CVE-2024-4708 has been assigned to this vulnerability. A CVSS v3.1 base score of 9.8 has been calculated; the CVSS vector string is ( AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H ). A CVSS v4 score …","exec":"CVSS v4 9.3 ATTENTION : Exploitable remotely/low attack complexity Vendor : mySCADA Equipment : myPRO Vulnerability : Use of Hard-coded Password Successful exploitation of this vulnerability could allow an attacker to remotely execute code on the affected device.","techFull":"The following mySCADA products are affected: myPRO: Versions prior to 8.31.0 The affected application uses a hard-coded password which could allow an attacker to remotely execute code on the affected device. CVE-2024-4708 has been assigned to this vulnerability. A CVSS v3.1 base score of 9.8 has been calculated; the CVSS vector string is ( AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H ). A CVSS v4 score has also been calculated for CVE-2024-4708 . A base score of 9.3 has been calculated; the CVSS vector string is ( CVSS4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N ).","execFull":"CVSS v4 9.3 ATTENTION : Exploitable remotely/low attack complexity Vendor : mySCADA Equipment : myPRO Vulnerability : Use of Hard-coded Password Successful exploitation of this vulnerability could allow an attacker to remotely execute code on the affected device."},{"id":"icsa-24-165-07#doc","org":"CISA","type":"cisa_ics_advisory","year":null,"sev":null,"license":"public-domain-us-gov","url":null,"cves":["CVE-2024-36266"],"tech":"The following products of Siemens are affected: Siemens PowerSys: versions prior to V3.11 Siemens PowerSys insufficiently protects responses to authentication requests. This could allow a local attacker to bypass authentication, thereby gaining administrative privileges for the managed remote devices. CVE-2024-36266 has been assigned to this vulnerability. A CVSS v3 base score of 9.3 has been …","exec":"CVSS v4 8.5 ATTENTION : Low Attack Complexity Vendor : Siemens Equipment : PowerSys Vulnerability : Improper Authentication Successful exploitation of this vulnerability could allow a local attacker to bypass authentication, thereby gaining administrative privileges for the managed remote devices.","techFull":"The following products of Siemens are affected: Siemens PowerSys: versions prior to V3.11 Siemens PowerSys insufficiently protects responses to authentication requests. This could allow a local attacker to bypass authentication, thereby gaining administrative privileges for the managed remote devices. CVE-2024-36266 has been assigned to this vulnerability. A CVSS v3 base score of 9.3 has been calculated; the CVSS vector string is ( CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H ). A CVSS v4 score has also been calculated for CVE-2024-36266 . A base score of 8.5 has been calculated; the CVSS vector string is ( AV:L/AC:L/AT:N/PR:N/UI:N/VC:N/VI:H/VA:N/SC:H/SI:H/SA:H ).","execFull":"CVSS v4 8.5 ATTENTION : Low Attack Complexity Vendor : Siemens Equipment : PowerSys Vulnerability : Improper Authentication Successful exploitation of this vulnerability could allow a local attacker to bypass authentication, thereby gaining administrative privileges for the managed remote devices."},{"id":"icsa-24-193-18#doc","org":"CISA","type":"cisa_ics_advisory","year":null,"sev":null,"license":"public-domain-us-gov","url":null,"cves":["CVE-2024-5988","CVE-2024-5989","CVE-2024-5990"],"tech":"The vulnerabilities exist in the following versions of ThinManger ThinServer: ThinManager ThinServer: Versions 11.1.0, 11.2.0, 12.0.0, 12.1.0, 13.0.0, 13.1.0, 13.2.0 (CVE-2024-5988, CVE-2024-5989) ThinManager ThinServer: Versions 11.1.0, 11.2.0, 12.0.0, 12.1.0, 13.0.0, 13.1.0 (CVE-2024-5990) Due to an improper input validation, an unauthenticated threat actor can send a malicious message to …","exec":"CVSS v4 9.3 ATTENTION : Exploitable remotely/low attack complexity Vendor : Rockwell Automation Equipment : ThinManager ThinServer Vulnerabilities : Improper Input Validation Successful exploitation of these vulnerabilities could allow an attacker to execute arbitrary code or cause a …","techFull":null,"execFull":null}];
+(function () {
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  var byId = function (id) { return PAIRS.filter(function (p) { return p.id === id; })[0]; };
+  function srcText(p) { return (p.techFull || p.tech).split('CRITICAL INFRASTRUCTURE')[0].trim(); }
+  function onView(el, fn, thr) {
+    if (!('IntersectionObserver' in window)) { fn(); return; }
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { fn(); io.disconnect(); } }); }, { threshold: thr || 0.2 });
+    io.observe(el);
+  }
+
+  /* reveals */
+  $$('.reveal').forEach(function (el) { onView(el, function () { el.classList.add('in'); }, 0.15); });
+  ['#docsvg', '#orgbars', '#lic', '#ladder', '#adh'].forEach(function (s) { var el = $(s); if (el) onView(el, function () { el.classList.add('in'); }, 0.3); });
+
+  /* ---------- hero: the same flaw, told twice ---------- */
+  (function () {
+    var ms = $('#ms'); if (!ms) return;
+    var PH = ['', 'p1', 'p2', 'p3', 'p4'];
+    function set(i) { PH.forEach(function (c) { if (c) ms.classList.remove(c); }); if (PH[i]) ms.classList.add(PH[i]); }
+    if (reduce) { set(4); return; }
+    var visible = true, t = [];
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }, { threshold: 0.2 }).observe(ms);
+    function run() {
+      if (!visible || document.hidden) { t.push(setTimeout(run, 700)); return; }
+      set(0);
+      t.push(setTimeout(function () { set(1); }, 500));
+      t.push(setTimeout(function () { set(2); }, 2100));
+      t.push(setTimeout(function () { set(3); }, 3600));
+      t.push(setTimeout(function () { set(4); }, 5200));
+      t.push(setTimeout(run, 11500));
+    }
+    run();
+  })();
+
+  /* ---------- problem: items land one by one ---------- */
+  $$('.fails ul').forEach(function (ul) {
+    var items = $$('li', ul);
+    onView(ul, function () { items.forEach(function (li, i) { setTimeout(function () { li.classList.add('in'); }, reduce ? 0 : i * 140); }); }, 0.15);
+  });
+
+  /* ---------- rubric ledgers ---------- */
+  var DIMS = [
+    { id: 'D1', ax: 'U', nm: "The reader's contract", q: 'Does the text answer the fixed questions its reader has, in the order the reader has them?', c: [['L0', 'reader_questions']] },
+    { id: 'D2', ax: 'F', nm: 'Survival of facts with their frame', q: 'Do the material facts survive with the context needed to interpret them?', c: [['L0', 'id_parity'], ['L0', 'numeric_parity'], ['L0', 'entity_check']] },
+    { id: 'D3', ax: 'F', bi: 1, nm: 'Severity and risk calibration', q: 'Does the conveyed severity match the original, without softening and without inflating?', c: [['L0', 'severity_drift'], ['L0', 'claim_inflation']] },
+    { id: 'D4', ax: 'F', nm: 'Declared uncertainty and the temporal contract', q: 'Is what is not known declared, and does the text honour the clock its genre runs on?', c: [['L1', 'caveat preservation'], ['L0 / L1', 'uncertainty and time']] },
+    { id: 'D5', ax: 'FU', bi: 1, nm: 'Density and selection by materiality', q: 'Does the text contain what is material, and only what is material, for its reader?', c: [] },
+    { id: 'D6', ax: 'U', bi: 1, nm: 'Register and specificity by audience', q: 'Do the abstraction, the jargon and the specificity match the actor who is reading?', c: [['L0', 'prohibited_jargon']] },
+    { id: 'D7', ax: 'U', nm: 'Actionable ending', q: 'Does the reader know what is being asked of them, or what happens next?', c: [] },
+    { id: 'D8', ax: 'U', nm: 'Genre form', q: 'Does the text respect the format constants its genre has already published?', c: [['L0', 'format_constants']] }
+  ];
+  function dimHTML(d) {
+    var chips = d.c.length ? d.c.map(function (c) { return '<span class="chip"><span class="l">' + c[0] + '</span>' + c[1] + '</span>'; }).join('') : '<span class="chip un">no check reaches it · unexamined</span>';
+    var bid = d.bi ? '<span class="bid">Fails from both sides. <span class="sl"><span>soft</span><span class="mv">band</span><span>loud</span></span> A checker that punishes one direction rewards the other.</span>' : '';
+    return '<button class="dim" aria-expanded="false"><span class="dh"><span class="id">' + d.id + '</span><span class="nm">' + d.nm + '</span>' + (d.bi ? '<span class="bi">&harr; both ways</span>' : '') + '</span><span class="dq" style="display:block">' + d.q + '</span><span class="chk">' + chips + '</span>' + bid + '</button>';
+  }
+  $('#axisF').innerHTML = DIMS.filter(function (d) { return d.ax.indexOf('F') >= 0; }).map(dimHTML).join('');
+  $('#axisU').innerHTML = DIMS.filter(function (d) { return d.ax.indexOf('U') >= 0; }).map(dimHTML).join('');
+  $$('.dim').forEach(function (b) { b.addEventListener('click', function () { b.setAttribute('aria-expanded', b.getAttribute('aria-expanded') === 'true' ? 'false' : 'true'); }); });
+
+  /* ---------- retrieval ---------- */
+  var STOPW = new Set('a an the of to and or in on at by for with from as is are was were be been being this that these those it its which who whom whose what when where how than then there their they them we our you your he she his her not no nor but if so such can could may might would should will shall do does did has have had into over under also any all each other some more most very only same both about above after again against because before below between during further here just out own too up down off once while use uses used using allow allows allowed affected following version versions'.split(' '));
+  var IDRX = /\b(?:CVE-\d{4}-\d{4,7}|CWE-\d{1,4}|GHSA-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}|ICSA-\d{2}-\d{3}-\d{2})\b/gi;
+  function terms(t) { return (t.toLowerCase().match(/[a-z][a-z0-9-]{2,}/g) || []).filter(function (w) { return !STOPW.has(w); }); }
+  PAIRS.forEach(function (p) { p._terms = new Set(terms(p.tech + ' ' + p.exec)); p._ids = new Set(((p.tech + ' ' + p.exec).match(IDRX) || []).concat(p.cves || []).map(function (x) { return x.toUpperCase(); })); });
+  var DF = {}; PAIRS.forEach(function (p) { p._terms.forEach(function (t) { DF[t] = (DF[t] || 0) + 1; }); });
+  function idf(t) { return Math.log(1 + PAIRS.length / (DF[t] || PAIRS.length)); }
+  function search(q) {
+    var qids = Array.from(new Set((q.match(IDRX) || []).map(function (x) { return x.toUpperCase(); })));
+    var qt = Array.from(new Set(terms(q.replace(IDRX, ' '))));
+    return PAIRS.map(function (p) {
+      var ids = qids.filter(function (i) { return p._ids.has(i); });
+      var ts = qt.filter(function (t) { return p._terms.has(t); }).sort(function (a, b) { return idf(b) - idf(a); });
+      var w = ts.reduce(function (acc, t) { return acc + idf(t); }, 0);
+      return { p: p, ids: ids, ts: ts.filter(function (t) { return DF[t] <= 4; }).slice(0, 6), score: ids.length * 10 + w };
+    }).filter(function (h) { return h.ids.length || h.score >= 3.2; }).sort(function (a, b) { return b.score - a.score; }).slice(0, 3);
+  }
+  function hl(text, words) {
+    var out = esc(text);
+    if (!words.length) return out;
+    var rx = new RegExp('\\b(' + words.map(function (w) { return w.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&'); }).join('|') + ')\\b', 'gi');
+    return out.replace(rx, '<mark class="ev">$1</mark>');
+  }
+  var ORGNAME = function (p) { return p.org.replace(/^U\.S\. /, ''); };
+  function renderSearch() {
+    var q = $('#rq').value.trim(), out = $('#rout');
+    if (!q) { out.innerHTML = '<div class="empty">paste a finding above</div>'; return; }
+    var hits = search(q);
+    if (!hits.length) { out.innerHTML = '<div class="rv-meta">0 of 12 sample pairs matched</div><div class="empty">no match · nothing fabricated · a query that matches nothing returns nothing</div>'; return; }
+    out.innerHTML = '<div class="rv-meta">' + hits.length + ' of 12 sample pairs matched · ranked by identifiers, then shared terms</div>' + hits.map(function (h) {
+      var p = h.p, words = h.ids.concat(h.ts);
+      var lic = p.license === 'cc-by-4.0' ? 'CC BY 4.0' : 'public domain';
+      var link = p.url ? ' · <a href="' + esc(p.url) + '" target="_blank" rel="noopener">source</a>' : '';
+      var sig = (h.ids.length ? 'identifier <b>' + h.ids.map(esc).join(', ') + '</b>' : '') + (h.ids.length && h.ts.length ? ' · ' : '') + (h.ts.length ? 'terms <b>' + h.ts.slice(0, 8).map(esc).join(', ') + '</b>' : '');
+      return '<article class="hit"><div class="hit-h"><span><b>' + esc(ORGNAME(p)) + '</b> · ' + esc(p.type.replace(/_/g, ' ')) + (p.year ? ' · ' + p.year : '') + '</span><span>' + lic + link + '</span></div><div class="hit-b"><div><span class="label">technical</span>' + hl(p.tech, words) + '</div><div><span class="label">executive</span>' + hl(p.exec, words) + '</div></div><div class="hit-s">matched · ' + sig + '</div></article>';
+    }).join('');
+  }
+  var CHIPS = ['CVE-2021-44228', 'hard-coded password', 'vulnerabilities not resolved within required time frames', 'SIM swapping MFA', 'signing key rotation', 'quantum-resistant blockchain wallet'];
+  $('#rchips').innerHTML = CHIPS.map(function (c) { return '<button class="pill">' + esc(c) + '</button>'; }).join('');
+  $$('#rchips .pill').forEach(function (b) { b.addEventListener('click', function () { $('#rq').value = b.textContent; renderSearch(); }); });
+  var st; $('#rq').addEventListener('input', function () { clearTimeout(st); st = setTimeout(renderSearch, 140); });
+  renderSearch();
+
+
+})();
+</script>
+<script src="./assets/reviewer.js"></script>
+</body>
+</html>
