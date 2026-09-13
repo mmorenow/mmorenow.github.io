@@ -175,6 +175,9 @@
   .entry-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px 16px; flex-wrap: wrap; }
   .entry-title { font-family: var(--mono); font-weight: 500; font-size: 15px; }
   .entry-title .idx { color: var(--accent); margin-right: 7px; }
+  .gh-link { display: inline-flex; vertical-align: -3px; margin-left: 10px; color: var(--soft); border-radius: 6px; padding: 3px; transition: color .15s, background .15s; }
+  .gh-link:hover, .gh-link:focus-visible { color: var(--ink); background: var(--card); }
+  .gh-link svg { width: 17px; height: 17px; display: block; }
   .entry-date { font-family: var(--mono); font-size: 11.5px; color: var(--soft); white-space: nowrap; }
   .entry-sub { font-family: var(--mono); font-size: 11.5px; color: var(--soft); margin: 6px 0 10px; display: flex; align-items: center; gap: 7px; }
   .entry-sub img { height: 15px; width: auto; opacity: .85; }
@@ -995,10 +998,10 @@
       <article class="entry has-media">
         <figure class="entry-media"><button type="button" class="zoom" aria-label="Enlarge the Legible preview"><img src="./photos/projects/legible-og.jpg" alt="Legible artwork, a dense block of technical text connected to a short, clear retelling" loading="lazy" /></button></figure>
         <div class="entry-head">
-          <div class="entry-title"><span class="idx">[01]</span>Legible</div>
+          <div class="entry-title"><span class="idx">[01]</span>legible-sec<a class="gh-link" href="#TODO-github" target="_blank" rel="noopener" aria-label="legible-sec on GitHub" title="legible-sec on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.37A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg></a></div>
           <span class="entry-date">Jun 2026 – Present</span>
         </div>
-        <p>Legible grew out of the part of security work I enjoy most, which is explaining a finding to the person who has to decide about it. It measures what survives when a technical finding gets retold for a board, a regulator or a customer, using a corpus of 3,727 real findings paired with the summaries professionals wrote from them, a rubric with two axes that are never averaged, and three instruments on top, a search for how others retold a similar finding, a benchmark that measures what a model loses when it writes a briefing, and a reviewer that checks a draft against its source as you type.</p>
+        <p>legible-sec helps security professionals communicate technical findings to other audiences, like a board, a regulator or a customer, without losing what matters. It's built on a rubric that scores what a retelling keeps and whether it actually lands, and several tools sit on top of it, including a benchmark that measures how good AI models are at this same job.</p>
         <p class="tl-jumpline"><a class="tl-jump" href="./legible/">See a preview of Legible</a></p>
       </article>
       <article class="entry has-media">
@@ -1013,10 +1016,10 @@
           <div class="car-dots" role="tablist"></div>
         </div>
         <div class="entry-head">
-          <div class="entry-title"><span class="idx">[02]</span>Semester OS</div>
+          <div class="entry-title"><span class="idx">[02]</span>Semester OS<a class="gh-link" href="#TODO-github" target="_blank" rel="noopener" aria-label="Semester OS on GitHub" title="Semester OS on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.37A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/></svg></a></div>
           <span class="entry-date">Aug 2026 – Present</span>
         </div>
-        <p>A personal dashboard that keeps a whole semester in one place, from the next class and the next deadline to where each grade actually stands. It pulls my calendars, syllabi and course platforms together, works out how much of every grade is already secured and what I would need on the rest to reach a target, and lets me type a note like "the quiz moved to Friday" so a Claude Code agent proposes the exact changes and waits for me to confirm them.</p>
+        <p>A personal dashboard that keeps my whole semester in one place, from classes and deadlines to where each grade stands and what I need to reach a target. When something changes, I type a quick note and a Claude Code agent proposes the updates for me to confirm.</p>
         <p class="entry-tech">FastAPI · SQLite · React · TypeScript · Claude Code agents · Google Calendar API</p>
         <p class="media-note">Screens use invented courses.</p>
       </article>
